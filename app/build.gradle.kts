@@ -15,7 +15,9 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "dev.notune.transcribe"
+        // Own app ID so this fork installs alongside the original
+        // (dev.notune.transcribe) for side-by-side comparison.
+        applicationId = "dev.notune.transcribe.ultra"
         minSdk = 26
         targetSdk = 36
         versionCode = 23
