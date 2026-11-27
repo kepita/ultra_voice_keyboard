@@ -1,7 +1,6 @@
 package dev.notune.transcribe;
 
 import android.app.Activity;
-import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
 import android.net.Uri;
@@ -59,8 +58,7 @@ public class TranscribeFileActivity extends AppCompatActivity {
             String text = resultText.getText().toString();
             if (!text.isEmpty()) {
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("Transcription", text);
-                clipboard.setPrimaryClip(clip);
+                clipboard.setPrimaryClip(ClipboardUtil.sensitiveClip("Transcription", text));
                 Toast.makeText(this, R.string.file_copied, Toast.LENGTH_SHORT).show();
             }
         });
@@ -155,14 +153,9 @@ public class TranscribeFileActivity extends AppCompatActivity {
             resultArea.setVisibility(View.VISIBLE);
             copyButton.setVisibility(View.VISIBLE);
 
+            // Not copied automatically: the clipboard can be kept by keyboard
+            // history or synced off the device. The Copy button is right here.
             resultText.setText(text);
-
-            // Auto-copy to clipboard
-            ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText("Transcription", text);
-            clipboard.setPrimaryClip(clip);
-
-            Toast.makeText(this, R.string.file_copied_auto, Toast.LENGTH_LONG).show();
         });
     }
 

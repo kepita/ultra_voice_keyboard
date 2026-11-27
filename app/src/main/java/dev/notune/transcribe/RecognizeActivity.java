@@ -2,7 +2,6 @@ package dev.notune.transcribe;
 
 import android.app.Activity;
 import android.app.PendingIntent;
-import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
@@ -255,7 +254,7 @@ public class RecognizeActivity extends AppCompatActivity {
         ClipboardManager clipboard = (ClipboardManager) context.getSystemService(CLIPBOARD_SERVICE);
         if (clipboard == null) return;
         try {
-            clipboard.setPrimaryClip(ClipData.newPlainText("Transcription", text));
+            clipboard.setPrimaryClip(ClipboardUtil.sensitiveClip("Transcription", text));
         } catch (RuntimeException e) {
             Log.w(TAG, "Could not copy the transcription", e);
             return;

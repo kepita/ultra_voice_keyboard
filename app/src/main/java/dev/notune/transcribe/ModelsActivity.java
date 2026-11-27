@@ -382,7 +382,10 @@ public class ModelsActivity extends AppCompatActivity {
         Uri uri = data.getData();
         if (uri == null) return;
 
-        String name = queryDisplayName(uri);
+        // The display name comes from whichever app provides the file: keep
+        // only its last path component so a name like "../x.gguf" can't
+        // place the copy outside the models folder.
+        String name = safeFileName(queryDisplayName(uri));
         long size = querySize(uri);
 
         if (name == null || !ModelStore.isGguf(name)) {
@@ -409,8 +412,22 @@ public class ModelsActivity extends AppCompatActivity {
         importBar.setProgress(0);
         importText.setText(getString(R.string.models_importing, name));
 
-        File dest = new File(ModelStore.modelsDir(this), name);
-        File tmp = new File(ModelStore.modelsDir(this), name + ".part");
+        File dir = ModelStore.modelsDir(this);
+        File dest = new File(dir, name);
+        File tmp = new File(dir, name + ".part");
+        // Defense in depth on top of safeFileName: the copy must land
+        // directly inside the models folder.
+        try {
+            if (!dir.getCanonicalFile().equals(dest.getCanonicalFile().getParentFile())) {
+                throw new IOException("outside the models folder");
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Refusing model file name", e);
+            importButton.setEnabled(true);
+            importArea.setVisibility(View.GONE);
+            snackbar(getString(R.string.models_import_failed));
+            return;
+        }
 
         new Thread(() -> {
             boolean ok = false;
@@ -451,6 +468,14 @@ public class ModelsActivity extends AppCompatActivity {
                 }
             });
         }, "model-import").start();
+    }
+
+    /** The bare file name, or null if it is empty or a hidden/dot name. */
+    static String safeFileName(String name) {
+        if (name == null) return null;
+        String base = new File(name.replace('\\', '/')).getName().trim();
+        if (base.isEmpty() || base.startsWith(".")) return null;
+        return base;
     }
 
     private String queryDisplayName(Uri uri) {

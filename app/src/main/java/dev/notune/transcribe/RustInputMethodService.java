@@ -82,6 +82,11 @@ public class RustInputMethodService extends InputMethodService {
     // process audio. Flushed from onStartInputView once a field is focused
     // again so the text is never lost.
     private String pendingCommitText = null;
+    // App the current/last recording was started in. With "record in
+    // background", the user may switch apps before the transcription is done;
+    // the text must then only go into that app, never into whatever field
+    // happens to be focused next (e.g. a different chat).
+    private String recordingPackage = null;
 
     @Override
     public void onCreate() {
@@ -249,6 +254,7 @@ public class RustInputMethodService extends InputMethodService {
                         audioPauser.request(this);
                         pauseAudioActive = true;
                     }
+                    rememberRecordingApp();
                     startRecording();
                     updateRecordButtonUI(true);
                 }
@@ -371,10 +377,28 @@ public class RustInputMethodService extends InputMethodService {
                     audioPauser.request(this);
                     pauseAudioActive = true;
                 }
+                rememberRecordingApp();
                 startRecording();
                 updateRecordButtonUI(true);
             }
         }
+    }
+
+    private void rememberRecordingApp() {
+        EditorInfo info = getCurrentInputEditorInfo();
+        recordingPackage = info != null ? info.packageName : null;
+    }
+
+    /**
+     * Whether the focused field belongs to the app the dictation was recorded
+     * in. Unknown on either side counts as the same app (the old behaviour),
+     * so a missing package name never loses text.
+     */
+    private boolean isRecordingApp() {
+        if (recordingPackage == null) return true;
+        EditorInfo info = getCurrentInputEditorInfo();
+        return info == null || info.packageName == null
+                || recordingPackage.equals(info.packageName);
     }
 
     @Override
@@ -566,13 +590,15 @@ public class RustInputMethodService extends InputMethodService {
             }
             String committed = text + " ";
             InputConnection ic = getCurrentInputConnection();
-            if (inputActive && ic != null) {
+            if (inputActive && ic != null && isRecordingApp()) {
                 commitTranscribedText(ic, committed);
             } else {
                 // No editor is focused right now (common on long transcribes where
                 // a web field in Firefox/Gemini dropped focus while we processed
-                // audio). Committing now would be silently dropped, so defer the
-                // text until a field is focused again instead of losing it.
+                // audio), or the focused field is in another app than the one
+                // the dictation was for. Defer the text until a field of that
+                // app is focused again instead of losing it or typing it into
+                // the wrong app.
                 pendingCommitText = committed;
             }
             releaseAudioFocus();
@@ -615,6 +641,8 @@ public class RustInputMethodService extends InputMethodService {
     // available again.
     private void flushPendingText() {
         if (pendingCommitText == null) return;
+        // Only into the app it was dictated for; keep holding it otherwise.
+        if (!isRecordingApp()) return;
         InputConnection ic = getCurrentInputConnection();
         if (ic != null) {
             commitTranscribedText(ic, pendingCommitText);
