@@ -52,6 +52,7 @@
     <string name="model_desc_sensevoice">Inglese, cinese, cantonese, giapponese, coreano; veloce</string>
     <string name="model_desc_whisper_small">99 lingue, compatto; traduce in inglese</string>
     <string name="model_desc_nemotron">40 lingue incl. cinese, giapponese, coreano, arabo, hindi; con punteggiatura</string>
+    <string name="model_desc_parakeet_v2">Solo inglese, il più preciso per l\'inglese; modello inglese consigliato</string>
     <string name="model_desc_parakeet_v3_q8">Parakeet TDT 0.6B v3 con maggiore precisione</string>
     <string name="model_desc_whisper_turbo">99 lingue, il più accurato di questa lista; non traduce</string>
     <string name="model_desc_browse">Sfoglia tutti i modelli transcribe.cpp</string>
@@ -69,7 +70,7 @@
     <string name="models_no_browser">Nessun browser trovato per aprire il link.</string>
     <string name="models_delete">Elimina modello</string>
     <string name="models_delete_confirm">Eliminare %1$s dall\'archivio dell\'app?</string>
-    <string name="models_roles_hint">Tocca Internazionale sul modello da usare ovunque. Se vuoi, tocca Inglese su un secondo modello solo inglese (ad es. Parakeet TDT 110M da «Dove trovare i modelli»): la tastiera vocale e il pannello di input vocale mostrano allora un selettore Internazionale / Inglese durante la dettatura. I sottotitoli in tempo reale, i file condivisi e il servizio vocale di sistema usano sempre il modello internazionale. Dopo ogni dettatura, il modello non usato viene scaricato per risparmiare memoria, quindi la prima dettatura dopo un cambio richiede un po\' più di tempo.</string>
+    <string name="models_roles_hint">Tocca Internazionale sul modello da usare ovunque. Se vuoi, tocca Inglese su un secondo modello solo inglese (ad es. Parakeet TDT 0.6B v2 da «Dove trovare i modelli»): la tastiera vocale e il pannello di input vocale mostrano allora un selettore Internazionale / Inglese durante la dettatura. I sottotitoli in tempo reale, i file condivisi e il servizio vocale di sistema usano sempre il modello internazionale. Dopo ogni dettatura, il modello non usato viene scaricato per risparmiare memoria, quindi la prima dettatura dopo un cambio richiede un po\' più di tempo.</string>
     <string name="models_use_as_title">Usa %1$s come</string>
     <string name="models_use_as_international">Internazionale: il modello principale, usato ovunque</string>
     <string name="models_use_as_english">Inglese: da scegliere durante la dettatura</string>
