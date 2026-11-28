@@ -379,18 +379,67 @@ public class RustInputMethodService extends InputMethodService {
             return;
         }
         warmUpModel();
-        if (new File(getFilesDir(), "auto_record").exists()) {
-            if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO)
-                    == PackageManager.PERMISSION_GRANTED) {
-                if (isPauseAudioEnabled()) {
-                    audioPauser.request(this);
-                    pauseAudioActive = true;
-                }
-                rememberRecordingApp();
-                beginRecording();
-                updateRecordButtonUI(true);
-            }
+        if (new File(getFilesDir(), "auto_record").exists()
+                && checkSelfPermission(android.Manifest.permission.RECORD_AUDIO)
+                        == PackageManager.PERMISSION_GRANTED) {
+            autoRecordWhenVisible(AUTO_RECORD_VISIBILITY_TRIES);
         }
+    }
+
+    /** How often auto-record re-checks that the keyboard became visible (100 ms apart). */
+    private static final int AUTO_RECORD_VISIBILITY_TRIES = 6;
+
+    /**
+     * Starts the auto-record only once the keyboard can actually be seen.
+     * When another keyboard hands over (e.g. FUTO's mic key) and this keyboard
+     * starts cold, Android can report the window as shown before the view is
+     * laid out and visible; recording then would run with no way to see or
+     * stop it. So wait for a real, laid-out view, nudging the layout (the same
+     * fix as for the cold-start insets), and skip auto-record if it never
+     * shows: tapping the record button still works once it does.
+     */
+    private void autoRecordWhenVisible(int triesLeft) {
+        View view = inputView;
+        if (view == null) return;
+        view.postDelayed(() -> {
+            if (!windowVisible || isRecording) return;
+            View current = inputView;
+            if (current != null && isInputViewShown() && current.isShown()
+                    && current.getHeight() > 0) {
+                startAutoRecording();
+            } else if (triesLeft > 1) {
+                if (current != null) {
+                    current.requestApplyInsets();
+                    current.requestLayout();
+                }
+                autoRecordWhenVisible(triesLeft - 1);
+            } else {
+                Log.w(TAG, "keyboard view not visible; auto-record skipped");
+            }
+        }, triesLeft == AUTO_RECORD_VISIBILITY_TRIES ? 0 : 100);
+    }
+
+    private void startAutoRecording() {
+        if (isPauseAudioEnabled()) {
+            audioPauser.request(this);
+            pauseAudioActive = true;
+        }
+        rememberRecordingApp();
+        beginRecording();
+        updateRecordButtonUI(true);
+    }
+
+    /**
+     * Always show the keyboard view. By default Android hides an IME's view
+     * (while still reporting the window as shown) when it believes a
+     * hardware keyboard is present, which can also be the case for a moment
+     * while the keyboard starts cold. A voice keyboard has nothing to offer
+     * without its view.
+     */
+    @Override
+    public boolean onEvaluateInputViewShown() {
+        super.onEvaluateInputViewShown();
+        return true;
     }
 
     /**

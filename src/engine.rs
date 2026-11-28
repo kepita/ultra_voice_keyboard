@@ -635,11 +635,23 @@ pub fn ensure_loaded_slot_from_thread(
             *state = LoadState::Loading;
             drop(state);
 
-            let result = if let Ok(mut env) = jvm.attach_current_thread() {
-                do_load(&mut env, target_ref.as_obj(), slot)
-            } else {
-                Err("Failed to attach JNI thread".to_string())
-            };
+            // A panic must not leave the slot "Loading" forever: every later
+            // request would wait on it and voice input would hang on
+            // "Processing". Turn it into a failed load instead, which the
+            // next request retries.
+            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                if let Ok(mut env) = jvm.attach_current_thread() {
+                    do_load(&mut env, target_ref.as_obj(), slot)
+                } else {
+                    Err("Failed to attach JNI thread".to_string())
+                }
+            }))
+            .unwrap_or_else(|_| {
+                log::error!("{:?} model loading panicked; reporting as error", slot);
+                let msg = "model loading failed unexpectedly, please try again".to_string();
+                notify(&format!("Error: {}", msg));
+                Err(msg)
+            });
 
             let mut state = lock.lock().unwrap();
             match &result {
