@@ -46,7 +46,7 @@
 
     <string name="models_title">Речевые модели</string>
     <string name="models_section">Речевая модель</string>
-    <string name="models_active_section">Международная модель</string>
+    <string name="models_active_section">Модели речи</string>
     <string name="models_builtin_sub">Встроена в приложение · 25 европейских языков</string>
     <string name="model_desc_parakeet110m">Только английский, маленькая и быстрая</string>
     <string name="model_desc_sensevoice">Английский, китайский, кантонский, японский, корейский; быстрая</string>
@@ -69,9 +69,11 @@
     <string name="models_no_browser">Не найден браузер для открытия ссылки.</string>
     <string name="models_delete">Удалить модель</string>
     <string name="models_delete_confirm">Удалить %1$s из хранилища приложения?</string>
-    <string name="models_english_section">Английская модель</string>
-    <string name="models_english_desc">Необязательно: вторая модель только для английского, например небольшая Parakeet TDT 110M (только английский, см. «Где взять модели»). Если она выбрана, голосовая клавиатура и панель голосового ввода показывают переключатель Международная / Английская, который можно менять до остановки записи. Живые субтитры, общие файлы и системный сервис распознавания речи по-прежнему используют международную модель. После использования обе модели остаются загруженными, что требует больше памяти.</string>
-    <string name="models_english_off">Нет</string>
+    <string name="models_roles_hint">Нажмите «Междунар.» у модели, которую нужно использовать везде. При желании нажмите «Англ.» у второй, только английской модели (например, Parakeet TDT 110M из списка «Где взять модели»): тогда голосовая клавиатура и панель голосового ввода покажут переключатель Междунар. / Англ. во время диктовки. Живые субтитры, общие файлы и системная служба распознавания речи всегда используют международную модель. Когда использованы обе, обе остаются загруженными, что требует больше памяти.</string>
+    <string name="models_use_as_title">Использовать %1$s как</string>
+    <string name="models_use_as_international">Международная: основная модель, используется везде</string>
+    <string name="models_use_as_english">Английская: переключайтесь на неё во время диктовки</string>
+    <string name="models_use_as_none">Пока только импортировать</string>
     <string name="models_english_saved">Английская модель сохранена. Выберите её во время записи.</string>
     <string name="models_english_removed">Английская модель отключена</string>
     <string name="model_choice_english">Англ.</string>

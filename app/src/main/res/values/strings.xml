@@ -50,7 +50,7 @@
     <!-- Speech model management (transcribe.cpp GGUF backend) -->
     <string name="models_title">Speech models</string>
     <string name="models_section">Speech model</string>
-    <string name="models_active_section">International model</string>
+    <string name="models_active_section">Speech models</string>
     <string name="models_desc">The built-in model works out of the box. You can also import any transcribe.cpp GGUF model you\'ve downloaded. The app stays fully offline; downloads happen in your browser.</string>
     <string name="models_builtin">Parakeet TDT 0.6B v3</string>
     <string name="models_builtin_sub">Included in the app · 25 European languages</string>
@@ -74,9 +74,11 @@
     <string name="models_no_browser">No browser found to open the link.</string>
     <string name="models_delete">Delete model</string>
     <string name="models_delete_confirm">Delete %1$s from the app\'s storage?</string>
-    <string name="models_english_section">English model</string>
-    <string name="models_english_desc">Optional: a second model just for English, e.g. the small English-only Parakeet TDT 110M (see “Where to get models”). With one set, the voice keyboard and the voice-input panel show an International / English switch, which you can change until you stop recording. Live subtitles, shared files and the system speech service keep using the international model. Once both have been used, both stay loaded, which needs more memory.</string>
-    <string name="models_english_off">None</string>
+    <string name="models_roles_hint">Tap International on the model to use everywhere. Optionally tap English on a second, English-only model (e.g. Parakeet TDT 110M from “Where to get models”): the voice keyboard and the voice-input panel then show an International / English switch while you dictate. Live subtitles, shared files and the system speech service always use the International model. Once both have been used, both stay loaded, which needs more memory.</string>
+    <string name="models_use_as_title">Use %1$s as</string>
+    <string name="models_use_as_international">International: the main model, used everywhere</string>
+    <string name="models_use_as_english">English: switch to it while dictating</string>
+    <string name="models_use_as_none">Just import for now</string>
     <string name="models_english_saved">English model saved. Switch to it while recording.</string>
     <string name="models_english_removed">English model turned off</string>
     <string name="model_choice_english">English</string>

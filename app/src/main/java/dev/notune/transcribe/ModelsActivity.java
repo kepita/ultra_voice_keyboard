@@ -14,12 +14,12 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -49,6 +49,8 @@ import java.util.Locale;
  *   - {@code model_language}: optional language hint for GGUF models.
  *   - {@code english_model}: optional second, English model that voice input
  *     can switch to while recording (see {@link ModelStore}).
+ * Both roles are set right in the model list (International / English chips
+ * on each row), and an import asks which role the new model takes.
  */
 public class ModelsActivity extends AppCompatActivity {
     private static final String TAG = "ModelsActivity";
@@ -105,7 +107,6 @@ public class ModelsActivity extends AppCompatActivity {
     private TextView importText;
     private Button importButton;
     private Spinner languageSpinner;
-    private Spinner englishSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,7 +120,6 @@ public class ModelsActivity extends AppCompatActivity {
         importText = findViewById(R.id.txt_import);
         importButton = findViewById(R.id.btn_import);
         languageSpinner = findViewById(R.id.spinner_language);
-        englishSpinner = findViewById(R.id.spinner_english_model);
 
         importButton.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -276,81 +276,55 @@ public class ModelsActivity extends AppCompatActivity {
     private void refreshList() {
         modelList.removeAllViews();
         String active = ModelStore.ensureValidSelection(this);
+        String english = ModelStore.ensureValidEnglishSelection(this);
         List<String> names = ModelStore.importedModels(this);
         boolean builtin = ModelStore.hasBuiltinModel(this);
 
         findViewById(R.id.no_model_area).setVisibility(
                 builtin || !names.isEmpty() ? View.GONE : View.VISIBLE);
+        // The roles explanation; without any model the no-model hint explains instead.
+        findViewById(R.id.txt_models_roles).setVisibility(
+                (builtin ? 1 : 0) + names.size() > 0 ? View.VISIBLE : View.GONE);
 
         if (builtin) {
             addModelRow(getString(R.string.models_builtin),
-                    getString(R.string.models_builtin_sub), null, active.isEmpty());
+                    getString(R.string.models_builtin_sub), null,
+                    active.isEmpty(), ModelStore.ENGLISH_BUILTIN.equals(english));
         }
         for (String name : names) {
             String size = Formatter.formatShortFileSize(
                     this, new File(ModelStore.modelsDir(this), name).length());
-            addModelRow(name, size, name, name.equals(active));
+            addModelRow(name, size, name, name.equals(active), name.equals(english));
         }
-        refreshEnglishSpinner(builtin, names);
     }
-
-    // --- English model ------------------------------------------------------
 
     /**
-     * Offers "off", the built-in model and every imported one for the English
-     * slot. Rebuilt with the model list, so imports and deletions show up.
-     * No reload is needed on change: voice input loads the English model
-     * when it is first used, and drops an outdated one by itself.
+     * Adds one model row with its role chips; {@code fileName} is null for the
+     * built-in model. International is the main model (always exactly one, so
+     * its chip can't be turned off, only moved to another model); English is
+     * optional and toggles. No reload is needed for English: voice input
+     * loads it when it is first used and drops an outdated one by itself.
      */
-    private void refreshEnglishSpinner(boolean builtin, List<String> names) {
-        String stored = ModelStore.ensureValidEnglishSelection(this);
-
-        List<String> values = new ArrayList<>();
-        List<String> labels = new ArrayList<>();
-        values.add("");
-        labels.add(getString(R.string.models_english_off));
-        if (builtin) {
-            values.add(ModelStore.ENGLISH_BUILTIN);
-            labels.add(getString(R.string.models_builtin));
-        }
-        for (String name : names) {
-            values.add(name);
-            labels.add(name);
-        }
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this, android.R.layout.simple_spinner_item, labels);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        englishSpinner.setOnItemSelectedListener(null);
-        englishSpinner.setAdapter(adapter);
-        englishSpinner.setSelection(Math.max(0, values.indexOf(stored)), false);
-        englishSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String value = values.get(position);
-                if (value.equals(ModelStore.englishModel(ModelsActivity.this))) return;
-                ModelStore.setEnglishModel(ModelsActivity.this, value);
-                snackbar(getString(value.isEmpty()
-                        ? R.string.models_english_removed : R.string.models_english_saved));
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-    }
-
-    /** Adds one selectable row; {@code fileName} is null for the built-in model. */
-    private void addModelRow(String title, String subtitle, String fileName, boolean checked) {
+    private void addModelRow(String title, String subtitle, String fileName,
+                             boolean isInternational, boolean isEnglish) {
         View row = getLayoutInflater().inflate(R.layout.item_model, modelList, false);
         ((TextView) row.findViewById(R.id.txt_model_name)).setText(title);
         ((TextView) row.findViewById(R.id.txt_model_sub)).setText(subtitle);
 
-        RadioButton radio = row.findViewById(R.id.radio_model);
-        radio.setChecked(checked);
-        row.setOnClickListener(v -> {
-            if (!checked) selectModel(fileName);
+        Chip international = row.findViewById(R.id.chip_international);
+        international.setChecked(isInternational);
+        international.setOnClickListener(v -> {
+            if (isInternational) {
+                international.setChecked(true); // stays: pick another model instead
+            } else {
+                selectModel(fileName);
+            }
         });
+
+        Chip englishChip = row.findViewById(R.id.chip_english);
+        englishChip.setChecked(isEnglish);
+        englishChip.setOnClickListener(v -> setEnglish(isEnglish ? null
+                : fileName != null ? fileName : ModelStore.ENGLISH_BUILTIN));
 
         ImageButton delete = row.findViewById(R.id.btn_model_delete);
         if (fileName != null) {
@@ -367,6 +341,37 @@ public class ModelsActivity extends AppCompatActivity {
         refreshList();
         setStatus(getString(R.string.models_loading));
         reloadModelNative(this);
+    }
+
+    /** Makes {@code value} the English model, or turns English off for null. */
+    private void setEnglish(String value) {
+        ModelStore.setEnglishModel(this, value);
+        refreshList();
+        snackbar(getString(value == null
+                ? R.string.models_english_removed : R.string.models_english_saved));
+    }
+
+    /**
+     * Right after an import: ask what the new model is for, so it's set up
+     * where it was added. Skipped when it is the only model (it is then the
+     * international one already).
+     */
+    private void askRoleForImport(String name) {
+        int models = (ModelStore.hasBuiltinModel(this) ? 1 : 0)
+                + ModelStore.importedModels(this).size();
+        if (models < 2) return;
+        CharSequence[] choices = {
+                getString(R.string.models_use_as_international),
+                getString(R.string.models_use_as_english),
+                getString(R.string.models_use_as_none),
+        };
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(getString(R.string.models_use_as_title, name))
+                .setItems(choices, (d, which) -> {
+                    if (which == 0) selectModel(name);
+                    else if (which == 1) setEnglish(name);
+                })
+                .show();
     }
 
     private void confirmDelete(String fileName) {
@@ -514,6 +519,7 @@ public class ModelsActivity extends AppCompatActivity {
                         setStatus(getString(R.string.models_loading));
                         reloadModelNative(this);
                     }
+                    askRoleForImport(name);
                 } else {
                     snackbar(getString(R.string.models_import_failed));
                 }
