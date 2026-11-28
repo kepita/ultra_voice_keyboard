@@ -149,6 +149,9 @@
     <string name="subs_waiting">Aguardando áudio…</string>
     <string name="subs_notification_title">Legendas ao vivo ativas</string>
     <string name="subs_notification_text">Legendando o áudio reproduzido neste dispositivo</string>
+    <string name="bg_recording_channel">Gravação em segundo plano</string>
+    <string name="bg_recording_title">O teclado de voz está ouvindo</string>
+    <string name="bg_recording_text">Volte ao app em que estava escrevendo e toque para parar</string>
     <string name="subs_stop">Parar</string>
     <string name="subs_grant_overlay">Permita “Sobrepor a outros apps”</string>
     <string name="subs_overlay_required">As legendas ao vivo precisam da permissão “Sobrepor a outros apps”</string>
