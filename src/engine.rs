@@ -488,6 +488,11 @@ fn is_slot_loaded(slot: Slot) -> bool {
     slot.state().engine.lock().unwrap().is_some()
 }
 
+/// True while a thread is loading the engine of `slot`.
+pub fn is_loading(slot: Slot) -> bool {
+    *slot.state().load.0.lock().unwrap() == LoadState::Loading
+}
+
 /// Drops the loaded engine of `slot` and clears its load state so the next
 /// `ensure_loaded*` call reloads with the current model selection. Waits for
 /// an in-flight load to finish first, so a reload can't race a load of the

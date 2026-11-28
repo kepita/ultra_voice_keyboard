@@ -378,6 +378,7 @@ public class RustInputMethodService extends InputMethodService {
             // text area); never auto-start a recording from here.
             return;
         }
+        warmUpModel();
         if (new File(getFilesDir(), "auto_record").exists()) {
             if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO)
                     == PackageManager.PERMISSION_GRANTED) {
@@ -389,6 +390,26 @@ public class RustInputMethodService extends InputMethodService {
                 beginRecording();
                 updateRecordButtonUI(true);
             }
+        }
+    }
+
+    /**
+     * Starts loading the selected model as soon as the keyboard appears, so it
+     * has a head start on the recording: after a dictation with the other
+     * model it was unloaded, and loading takes a few seconds. Does nothing if
+     * it is loaded or loading already. Skipped while a dictation is still
+     * being transcribed, so a load doesn't slow that down; the recording
+     * start loads it then anyway.
+     */
+    private void warmUpModel() {
+        if (lastStatus.contains("Transcribing") || lastStatus.contains("Processing")
+                || !ModelStore.hasAnyModel(this)) {
+            return;
+        }
+        try {
+            setModelChoice(ModelStore.startWithEnglish(this));
+        } catch (Throwable t) {
+            Log.w(TAG, "warm-up failed", t);
         }
     }
 
@@ -595,8 +616,10 @@ public class RustInputMethodService extends InputMethodService {
         // Disable the button only while busy. After an error it stays usable:
         // most errors are transient (no audio, storage was full while
         // extracting the model, mic busy), and the next attempt retries.
+        // Never while recording: the button is how the user stops, and a
+        // model still loading in the background must not block that.
         if (recordContainer != null) {
-            boolean disable = isTranscribing || isWaiting;
+            boolean disable = !isRecording && (isTranscribing || isWaiting);
             recordContainer.setEnabled(!disable);
             recordContainer.setAlpha(disable ? 0.5f : 1.0f);
         }
