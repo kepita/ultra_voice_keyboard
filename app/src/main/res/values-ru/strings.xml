@@ -46,7 +46,7 @@
 
     <string name="models_title">Речевые модели</string>
     <string name="models_section">Речевая модель</string>
-    <string name="models_active_section">Активная модель</string>
+    <string name="models_active_section">Международная модель</string>
     <string name="models_builtin_sub">Встроена в приложение · 25 европейских языков</string>
     <string name="model_desc_parakeet110m">Только английский, маленькая и быстрая</string>
     <string name="model_desc_sensevoice">Английский, китайский, кантонский, японский, корейский; быстрая</string>
@@ -69,6 +69,13 @@
     <string name="models_no_browser">Не найден браузер для открытия ссылки.</string>
     <string name="models_delete">Удалить модель</string>
     <string name="models_delete_confirm">Удалить %1$s из хранилища приложения?</string>
+    <string name="models_english_section">Английская модель</string>
+    <string name="models_english_desc">Необязательно: вторая модель только для английского, например небольшая Parakeet TDT 110M (только английский, см. «Где взять модели»). Если она выбрана, голосовая клавиатура и панель голосового ввода показывают переключатель Международная / Английская, который можно менять до остановки записи. Живые субтитры, общие файлы и системный сервис распознавания речи по-прежнему используют международную модель. После использования обе модели остаются загруженными, что требует больше памяти.</string>
+    <string name="models_english_off">Нет</string>
+    <string name="models_english_saved">Английская модель сохранена. Выберите её во время записи.</string>
+    <string name="models_english_removed">Английская модель отключена</string>
+    <string name="model_choice_english">Англ.</string>
+    <string name="model_choice_international">Междунар.</string>
     <string name="models_language_section">Язык</string>
     <string name="models_language_desc">Язык, передаваемый модели. «Автоматически» позволяет модели решать сама. Whisper и другие модели, которым можно задать язык, его учитывают; модели Parakeet всегда определяют язык сами и игнорируют эту настройку. Языки, не поддерживаемые активной моделью, игнорируются.</string>
     <string name="models_language_auto">Автоматически</string>

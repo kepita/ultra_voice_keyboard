@@ -13,8 +13,9 @@ pub unsafe extern "system" fn Java_dev_notune_transcribe_RecognizeActivity_initN
     env: JNIEnv,
     _class: JClass,
     activity: JObject,
+    use_english: jni::sys::jboolean,
 ) {
-    let state = voice_session::init_session(env, activity);
+    let state = voice_session::init_session(env, activity, use_english != 0);
     *RECOG_STATE.lock().unwrap() = Some(state);
 }
 
@@ -67,5 +68,19 @@ pub unsafe extern "system" fn Java_dev_notune_transcribe_RecognizeActivity_cance
     let mut guard = RECOG_STATE.lock().unwrap();
     if let Some(state) = guard.as_mut() {
         crate::voice_session::cancel_recording(env, state);
+    }
+}
+
+/// The user switched between the English and the international model; may
+/// happen while recording.
+#[no_mangle]
+pub unsafe extern "system" fn Java_dev_notune_transcribe_RecognizeActivity_setModelChoice(
+    env: JNIEnv,
+    _class: JClass,
+    use_english: jni::sys::jboolean,
+) {
+    let mut guard = RECOG_STATE.lock().unwrap();
+    if let Some(state) = guard.as_mut() {
+        voice_session::set_model_choice(env, state, use_english != 0);
     }
 }

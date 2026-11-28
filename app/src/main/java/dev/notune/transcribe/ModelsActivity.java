@@ -47,6 +47,8 @@ import java.util.Locale;
  * other settings), read by the Rust engine loader:
  *   - {@code active_model}: see {@link ModelStore}.
  *   - {@code model_language}: optional language hint for GGUF models.
+ *   - {@code english_model}: optional second, English model that voice input
+ *     can switch to while recording (see {@link ModelStore}).
  */
 public class ModelsActivity extends AppCompatActivity {
     private static final String TAG = "ModelsActivity";
@@ -103,6 +105,7 @@ public class ModelsActivity extends AppCompatActivity {
     private TextView importText;
     private Button importButton;
     private Spinner languageSpinner;
+    private Spinner englishSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,6 +119,7 @@ public class ModelsActivity extends AppCompatActivity {
         importText = findViewById(R.id.txt_import);
         importButton = findViewById(R.id.btn_import);
         languageSpinner = findViewById(R.id.spinner_language);
+        englishSpinner = findViewById(R.id.spinner_english_model);
 
         importButton.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -287,6 +291,53 @@ public class ModelsActivity extends AppCompatActivity {
                     this, new File(ModelStore.modelsDir(this), name).length());
             addModelRow(name, size, name, name.equals(active));
         }
+        refreshEnglishSpinner(builtin, names);
+    }
+
+    // --- English model ------------------------------------------------------
+
+    /**
+     * Offers "off", the built-in model and every imported one for the English
+     * slot. Rebuilt with the model list, so imports and deletions show up.
+     * No reload is needed on change: voice input loads the English model
+     * when it is first used, and drops an outdated one by itself.
+     */
+    private void refreshEnglishSpinner(boolean builtin, List<String> names) {
+        String stored = ModelStore.ensureValidEnglishSelection(this);
+
+        List<String> values = new ArrayList<>();
+        List<String> labels = new ArrayList<>();
+        values.add("");
+        labels.add(getString(R.string.models_english_off));
+        if (builtin) {
+            values.add(ModelStore.ENGLISH_BUILTIN);
+            labels.add(getString(R.string.models_builtin));
+        }
+        for (String name : names) {
+            values.add(name);
+            labels.add(name);
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this, android.R.layout.simple_spinner_item, labels);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        englishSpinner.setOnItemSelectedListener(null);
+        englishSpinner.setAdapter(adapter);
+        englishSpinner.setSelection(Math.max(0, values.indexOf(stored)), false);
+        englishSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String value = values.get(position);
+                if (value.equals(ModelStore.englishModel(ModelsActivity.this))) return;
+                ModelStore.setEnglishModel(ModelsActivity.this, value);
+                snackbar(getString(value.isEmpty()
+                        ? R.string.models_english_removed : R.string.models_english_saved));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
     }
 
     /** Adds one selectable row; {@code fileName} is null for the built-in model. */

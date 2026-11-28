@@ -46,7 +46,7 @@
 
     <string name="models_title">Modelos de voz</string>
     <string name="models_section">Modelo de voz</string>
-    <string name="models_active_section">Modelo ativo</string>
+    <string name="models_active_section">Modelo internacional</string>
     <string name="models_builtin_sub">Incluído no app · 25 idiomas europeus</string>
     <string name="model_desc_parakeet110m">Somente inglês, pequeno e rápido</string>
     <string name="model_desc_sensevoice">Inglês, chinês, cantonês, japonês, coreano; rápido</string>
@@ -69,6 +69,13 @@
     <string name="models_no_browser">Nenhum navegador encontrado para abrir o link.</string>
     <string name="models_delete">Excluir modelo</string>
     <string name="models_delete_confirm">Excluir %1$s do armazenamento do app?</string>
+    <string name="models_english_section">Modelo inglês</string>
+    <string name="models_english_desc">Opcional: um segundo modelo só para inglês, p. ex. o pequeno Parakeet TDT 110M (só inglês, ver «Onde obter modelos»). Com um definido, o teclado de voz e o painel de entrada de voz mostram um seletor Internacional / Inglês, que pode alterar até parar a gravação. Legendas ao vivo, ficheiros partilhados e o serviço de voz do sistema continuam a usar o modelo internacional. Depois de usados, ambos os modelos ficam carregados, o que requer mais memória.</string>
+    <string name="models_english_off">Nenhum</string>
+    <string name="models_english_saved">Modelo inglês guardado. Escolha-o durante a gravação.</string>
+    <string name="models_english_removed">Modelo inglês desativado</string>
+    <string name="model_choice_english">Inglês</string>
+    <string name="model_choice_international">Internacional</string>
     <string name="models_language_section">Idioma</string>
     <string name="models_language_desc">O idioma passado ao modelo. «Automático» deixa o modelo decidir. O Whisper e outros modelos aos quais se pode indicar o idioma o respeitam; os modelos Parakeet sempre detectam o idioma sozinhos e ignoram esta configuração. Idiomas não suportados pelo modelo ativo são ignorados.</string>
     <string name="models_language_auto">Automático</string>

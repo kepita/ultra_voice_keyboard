@@ -81,6 +81,10 @@ This relies on the undocumented `PROJECT_MEDIA` app-op; on some OEM builds it ma
 
 The built-in Parakeet model works out of the box. (The F-Droid build has no built-in model, since F-Droid builds everything from source: on first start, the app shows how to download the same model in your browser and import it. The F-Droid build is reproducible and carries the same signature as the GitHub releases, which also include it as `…_fdroid.apk`, so you can switch between the GitHub/Obtainium and F-Droid versions without reinstalling.) Under **Manage speech models** you can additionally import any [transcribe.cpp](https://github.com/handy-computer/transcribe.cpp) GGUF model: download a `.gguf` file in your browser (the in-app *Where to get models* dialog lists direct links, e.g. a tiny 135 MB English-only Parakeet, the multilingual Nemotron 3.5 streaming model with punctuation, or Whisper large-v3-turbo), then import it via the system file picker and select it. The app itself needs no internet permission — model files are simply copied into the app's private storage. An optional language hint (e.g. `en-US`, or `auto`) can be set for imported models.
 
+#### English + international model
+
+Besides the main (international) model, you can pick an optional **English model** under *Manage speech models* — e.g. the small English-only Parakeet TDT 110M, or the built-in model if your main model is another one. With one set, the voice keyboard and the voice-input panel show an **International / English** switch. You can flip it any time until you stop the recording: the model selected at that moment transcribes, and the choice is remembered for the next recording. The other model starts loading as soon as you switch, so it's usually ready when you stop speaking. Live subtitles, shared files and the system speech service always use the international model. Once both have been used, both stay loaded, which takes more memory.
+
 ## Prerequisites
 
 | Dependency | Installation |

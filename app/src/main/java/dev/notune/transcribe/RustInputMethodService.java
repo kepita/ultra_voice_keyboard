@@ -50,6 +50,7 @@ public class RustInputMethodService extends InputMethodService {
     private View inputView;
     private MicLevelView micLevelView;
     private View recordCircle;
+    private ModelChoiceToggle modelChoice;
     // Night flag the current input view was inflated with, so it can be rebuilt
     // if the theme preference changes while this process stays alive.
     private boolean viewIsNight = false;
@@ -94,7 +95,7 @@ public class RustInputMethodService extends InputMethodService {
         mainHandler = new Handler(Looper.getMainLooper());
         Log.d(TAG, "Service onCreate");
         try {
-            initNative(this);
+            initNative(this, ModelStore.startWithEnglish(this));
         } catch (Throwable t) {
             // Native may be unavailable (e.g. wrong-ABI emulator); don't crash the IME.
             Log.e(TAG, "Error in initNative", t);
@@ -141,6 +142,13 @@ public class RustInputMethodService extends InputMethodService {
             spaceButton = view.findViewById(R.id.ime_space);
             enterButton = view.findViewById(R.id.ime_enter);
             switchKeyboardButton = view.findViewById(R.id.ime_switch_keyboard);
+            modelChoice = ModelChoiceToggle.bind(this, view, english -> {
+                try {
+                    setModelChoice(english);
+                } catch (Throwable t) {
+                    Log.e(TAG, "setModelChoice failed", t);
+                }
+            });
 
             switchKeyboardButton.setOnClickListener(v -> {
                 if (isRecording) {
@@ -255,7 +263,7 @@ public class RustInputMethodService extends InputMethodService {
                         pauseAudioActive = true;
                     }
                     rememberRecordingApp();
-                    startRecording();
+                    beginRecording();
                     updateRecordButtonUI(true);
                 }
             });
@@ -378,10 +386,20 @@ public class RustInputMethodService extends InputMethodService {
                     pauseAudioActive = true;
                 }
                 rememberRecordingApp();
-                startRecording();
+                beginRecording();
                 updateRecordButtonUI(true);
             }
         }
+    }
+
+    /**
+     * Starts capture with the model choice currently saved (it may have been
+     * changed in the app since the switch was last shown).
+     */
+    private void beginRecording() {
+        if (modelChoice != null) modelChoice.refresh();
+        setModelChoice(ModelStore.startWithEnglish(this));
+        startRecording();
     }
 
     private void rememberRecordingApp() {
@@ -464,6 +482,8 @@ public class RustInputMethodService extends InputMethodService {
             // padding (otherwise the bottom key row is cut off).
             rebuilt.requestApplyInsets();
         }
+        // The English model may have been added or removed in the app.
+        if (modelChoice != null && !isRecording) modelChoice.refresh();
         // A field is focused and the input connection is live again — commit any
         // text that finished transcribing while nothing was focused.
         flushPendingText();
@@ -522,11 +542,12 @@ public class RustInputMethodService extends InputMethodService {
     }
 
     // Native methods
-    private native void initNative(RustInputMethodService service);
+    private native void initNative(RustInputMethodService service, boolean useEnglish);
     private native void cleanupNative(RustInputMethodService self);
     private native void startRecording();
     private native void stopRecording();
     private native void cancelRecording();
+    private native void setModelChoice(boolean useEnglish);
 
     // Called from Rust
     public void onStatusUpdate(String status) {
@@ -578,6 +599,12 @@ public class RustInputMethodService extends InputMethodService {
             boolean disable = isTranscribing || isWaiting;
             recordContainer.setEnabled(!disable);
             recordContainer.setAlpha(disable ? 0.5f : 1.0f);
+        }
+
+        // The model can be switched until the recording stops; once the
+        // audio is being transcribed, the choice is final.
+        if (modelChoice != null) {
+            modelChoice.setEnabled(isRecording || !(isTranscribing || isWaiting));
         }
 
         if (hintView != null && !isRecording) {

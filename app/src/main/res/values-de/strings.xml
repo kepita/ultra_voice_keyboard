@@ -46,7 +46,7 @@
 
     <string name="models_title">Sprachmodelle</string>
     <string name="models_section">Sprachmodell</string>
-    <string name="models_active_section">Aktives Modell</string>
+    <string name="models_active_section">Internationales Modell</string>
     <string name="models_builtin_sub">In der App enthalten · 25 europäische Sprachen</string>
     <string name="model_desc_parakeet110m">Nur Englisch, klein und schnell</string>
     <string name="model_desc_sensevoice">Englisch, Chinesisch, Kantonesisch, Japanisch, Koreanisch; schnell</string>
@@ -69,6 +69,13 @@
     <string name="models_no_browser">Kein Browser gefunden, um den Link zu öffnen.</string>
     <string name="models_delete">Modell löschen</string>
     <string name="models_delete_confirm">%1$s aus dem Speicher der App löschen?</string>
+    <string name="models_english_section">Englisches Modell</string>
+    <string name="models_english_desc">Optional: ein zweites Modell nur für Englisch, z. B. das kleine, rein englische Parakeet TDT 110M (siehe „Wo gibt es Modelle?“). Ist eines gewählt, zeigen die Sprachtastatur und das Spracheingabe-Fenster einen Schalter International / Englisch, den du bis zum Ende der Aufnahme umstellen kannst. Live-Untertitel, geteilte Dateien und der System-Spracherkennungsdienst nutzen weiterhin das internationale Modell. Wurden beide benutzt, bleiben beide geladen, was mehr Speicher braucht.</string>
+    <string name="models_english_off">Keines</string>
+    <string name="models_english_saved">Englisches Modell gespeichert. Wähle es während der Aufnahme.</string>
+    <string name="models_english_removed">Englisches Modell deaktiviert</string>
+    <string name="model_choice_english">Englisch</string>
+    <string name="model_choice_international">International</string>
     <string name="models_language_section">Sprache</string>
     <string name="models_language_desc">Die an das Modell übergebene Sprache. „Automatisch“ lässt das Modell entscheiden. Whisper und andere Modelle, denen man die Sprache vorgeben kann, halten sich daran; Parakeet-Modelle erkennen die Sprache immer selbst und ignorieren diese Einstellung. Sprachen, die das aktive Modell nicht unterstützt, werden ignoriert.</string>
     <string name="models_language_auto">Automatisch</string>

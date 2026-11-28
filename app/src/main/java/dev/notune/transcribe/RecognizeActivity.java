@@ -44,6 +44,7 @@ public class RecognizeActivity extends AppCompatActivity {
     private MicLevelView micLevel;
     private final AudioFocusPauser audioPauser = new AudioFocusPauser();
     private boolean pauseAudioActive = false;
+    private ModelChoiceToggle modelChoice;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +95,11 @@ public class RecognizeActivity extends AppCompatActivity {
             return;
         }
 
-        initNative(this);
+        initNative(this, ModelStore.startWithEnglish(this));
+        modelChoice = ModelChoiceToggle.bind(this, findViewById(R.id.root), english -> {
+            // Only matters until the recording stops; then the choice is final.
+            if (isRecording) setModelChoice(english);
+        });
         isRecording = true;
         status.setText(R.string.voice_listening);
         if (isPauseAudioEnabled()) {
@@ -109,6 +114,7 @@ public class RecognizeActivity extends AppCompatActivity {
         if (!isRecording) return;
         isRecording = false;
         status.setText(R.string.voice_processing);
+        if (modelChoice != null) modelChoice.setEnabled(false);
         stopRecording();
         if (pauseAudioActive) {
             audioPauser.abandon(this);
@@ -275,9 +281,10 @@ public class RecognizeActivity extends AppCompatActivity {
     }
 
     // Native methods
-    private native void initNative(RecognizeActivity activity);
+    private native void initNative(RecognizeActivity activity, boolean useEnglish);
     private native void cleanupNative(RecognizeActivity self);
     private native void startRecording(boolean autoStop);
     private native void stopRecording();
     private native void cancelRecording();
+    private native void setModelChoice(boolean useEnglish);
 }

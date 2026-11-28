@@ -16,10 +16,19 @@ import java.util.Locale;
  * F-Droid builds) and GGUF files imported into {@code files/models/}. The
  * selection is the {@code active_model} marker file read by the Rust engine
  * loader: the file name of an imported model, absent/empty = bundled model.
+ * That is the main (international) model. Optionally, a second, English
+ * model can be selected in {@code english_model}; voice input then lets the
+ * user pick between the two while recording.
  */
 public final class ModelStore {
     private static final String TAG = "ModelStore";
     private static final String ACTIVE_MODEL_FILE = "active_model";
+    /** English model: an imported file name or {@link #ENGLISH_BUILTIN} (see src/engine.rs). */
+    private static final String ENGLISH_MODEL_FILE = "english_model";
+    /** {@code english_model} value for the bundled model (never ends in .gguf). */
+    public static final String ENGLISH_BUILTIN = "builtin";
+    /** Marker: voice input uses the English model (the user's last choice). */
+    private static final String USE_ENGLISH_FILE = "use_english_model";
     /** Asset directory of the bundled model (see src/assets.rs). */
     private static final String BUILTIN_ASSET_DIR = "builtin-model";
 
@@ -119,6 +128,79 @@ public final class ModelStore {
         String fallback = hasBuiltinModel(ctx) || names.isEmpty() ? "" : names.get(0);
         if (!fallback.equals(active)) setActiveModel(ctx, fallback);
         return fallback;
+    }
+
+    // --- English model -------------------------------------------------------
+
+    /**
+     * The selected English model: an imported file name,
+     * {@link #ENGLISH_BUILTIN}, or "" for none.
+     */
+    public static String englishModel(Context ctx) {
+        File f = new File(ctx.getFilesDir(), ENGLISH_MODEL_FILE);
+        if (!f.exists()) return "";
+        try {
+            return new String(Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8).trim();
+        } catch (IOException e) {
+            return "";
+        }
+    }
+
+    /** Selects the English model; null or "" turns it off. */
+    public static void setEnglishModel(Context ctx, String value) {
+        File f = new File(ctx.getFilesDir(), ENGLISH_MODEL_FILE);
+        if (value == null || value.isEmpty()) {
+            f.delete();
+            return;
+        }
+        try {
+            Files.write(f.toPath(), value.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to write " + ENGLISH_MODEL_FILE, e);
+        }
+    }
+
+    /**
+     * Keeps the English selection pointing at a model that exists (a deleted
+     * one turns it off). Returns the (possibly updated) selection.
+     */
+    public static String ensureValidEnglishSelection(Context ctx) {
+        String english = englishModel(ctx);
+        if (english.isEmpty()) return english;
+        boolean exists = ENGLISH_BUILTIN.equals(english)
+                ? hasBuiltinModel(ctx)
+                : importedModels(ctx).contains(english);
+        if (exists) return english;
+        setEnglishModel(ctx, null);
+        return "";
+    }
+
+    /** True if an English model is selected, i.e. voice input offers the choice. */
+    public static boolean hasEnglishModel(Context ctx) {
+        return !ensureValidEnglishSelection(ctx).isEmpty();
+    }
+
+    /** The user's last choice in voice input: the English model (true) or the international one. */
+    public static boolean useEnglish(Context ctx) {
+        return new File(ctx.getFilesDir(), USE_ENGLISH_FILE).exists();
+    }
+
+    public static void setUseEnglish(Context ctx, boolean english) {
+        File f = new File(ctx.getFilesDir(), USE_ENGLISH_FILE);
+        if (!english) {
+            f.delete();
+            return;
+        }
+        try {
+            Files.write(f.toPath(), new byte[]{'1'});
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to write " + USE_ENGLISH_FILE, e);
+        }
+    }
+
+    /** True if voice input should start with the English model. */
+    public static boolean startWithEnglish(Context ctx) {
+        return useEnglish(ctx) && hasEnglishModel(ctx);
     }
 
     /** An engine status for display, with the no-model error translated. */
