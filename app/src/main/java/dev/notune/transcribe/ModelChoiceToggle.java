@@ -3,6 +3,7 @@ package dev.notune.transcribe;
 import android.content.Context;
 import android.view.View;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 
 /**
@@ -27,6 +28,7 @@ final class ModelChoiceToggle {
         this.context = context;
         this.group = group;
         group.addOnButtonCheckedListener((g, id, checked) -> {
+            updateIcons();
             if (!checked || updating) return;
             boolean english = id == R.id.model_choice_english;
             ModelStore.setUseEnglish(context, english);
@@ -51,6 +53,26 @@ final class ModelChoiceToggle {
         group.check(offered && ModelStore.useEnglish(context)
                 ? R.id.model_choice_english : R.id.model_choice_international);
         updating = false;
+        updateIcons();
+    }
+
+    /**
+     * A checkmark on the selected model only (its fill comes from the
+     * style's color state lists). Set in code so the other button doesn't
+     * reserve room for an empty icon.
+     */
+    private void updateIcons() {
+        for (int i = 0; i < group.getChildCount(); i++) {
+            View child = group.getChildAt(i);
+            if (child instanceof MaterialButton) {
+                MaterialButton button = (MaterialButton) child;
+                if (button.isChecked()) {
+                    button.setIconResource(R.drawable.ic_check);
+                } else {
+                    button.setIcon(null);
+                }
+            }
+        }
     }
 
     /** Enabled until the recording stops; disabled while transcribing. */
@@ -59,5 +81,7 @@ final class ModelChoiceToggle {
             group.getChildAt(i).setEnabled(enabled);
         }
         group.setEnabled(enabled);
+        // The custom fill and text colors don't dim by themselves.
+        group.setAlpha(enabled ? 1f : 0.5f);
     }
 }
