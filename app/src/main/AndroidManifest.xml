@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
@@ -102,6 +103,13 @@
         <service
             android:name=".LiveSubtitleService"
             android:foregroundServiceType="mediaProjection"
+            android:exported="false" />
+
+        <!-- Keeps the mic open while the voice keyboard records in the
+             background (see BackgroundRecordingService). -->
+        <service
+            android:name=".BackgroundRecordingService"
+            android:foregroundServiceType="microphone"
             android:exported="false" />
 
         <!-- Speech-to-text provider for other keyboards (SwiftKey, Gboard, …).

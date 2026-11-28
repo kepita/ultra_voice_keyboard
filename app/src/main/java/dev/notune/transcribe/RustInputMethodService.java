@@ -387,6 +387,12 @@ public class RustInputMethodService extends InputMethodService {
     private void rememberRecordingApp() {
         EditorInfo info = getCurrentInputEditorInfo();
         recordingPackage = info != null ? info.packageName : null;
+        // Called right before every recording start, while the keyboard is
+        // on screen: the only moment Android lets us start the microphone
+        // foreground service that keeps capturing after an app switch.
+        if (!isStopOnHideEnabled()) {
+            BackgroundRecordingService.start(this);
+        }
     }
 
     /**
@@ -481,6 +487,9 @@ public class RustInputMethodService extends InputMethodService {
             statusView.setText(R.string.ime_listening);
             hintView.setText(R.string.ime_tap_to_stop);
         } else {
+            // Capture is over (stopped, cancelled or failed): the mic no
+            // longer needs keeping open, drop the notification.
+            BackgroundRecordingService.stop(this);
             statusView.setText(R.string.voice_processing);
             hintView.setText(R.string.ime_tap_to_record);
             if (micLevelView != null) micLevelView.setLevel(0f);
@@ -507,6 +516,7 @@ public class RustInputMethodService extends InputMethodService {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        BackgroundRecordingService.stop(this);
         cleanupNative(this);
         releaseAudioFocus();
     }
@@ -530,6 +540,7 @@ public class RustInputMethodService extends InputMethodService {
             }
             if (status != null && status.startsWith("Error")) {
                 releaseAudioFocus();
+                BackgroundRecordingService.stop(this);
             }
         });
     }

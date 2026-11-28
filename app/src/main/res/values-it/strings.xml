@@ -149,6 +149,9 @@
     <string name="subs_waiting">In attesa di audio…</string>
     <string name="subs_notification_title">Sottotitoli in tempo reale attivi</string>
     <string name="subs_notification_text">Sottotitola l\'audio riprodotto su questo dispositivo</string>
+    <string name="bg_recording_channel">Registrazione in background</string>
+    <string name="bg_recording_title">La tastiera vocale è in ascolto</string>
+    <string name="bg_recording_text">Torna all\'app in cui stavi scrivendo e tocca per fermare</string>
     <string name="subs_stop">Ferma</string>
     <string name="subs_grant_overlay">Consenti «Mostra sopra altre app»</string>
     <string name="subs_overlay_required">I sottotitoli in tempo reale richiedono il permesso «Mostra sopra altre app»</string>

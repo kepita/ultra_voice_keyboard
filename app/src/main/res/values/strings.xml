@@ -155,6 +155,9 @@
     <string name="subs_waiting">Waiting for audio…</string>
     <string name="subs_notification_title">Live subtitles active</string>
     <string name="subs_notification_text">Captioning audio played on this device</string>
+    <string name="bg_recording_channel">Background recording</string>
+    <string name="bg_recording_title">Voice keyboard is listening</string>
+    <string name="bg_recording_text">Go back to the app you were typing in and tap to stop</string>
     <string name="subs_stop">Stop</string>
     <string name="subs_grant_overlay">Please allow “Display over other apps”</string>
     <string name="subs_overlay_required">Live subtitles need the “Display over other apps” permission</string>

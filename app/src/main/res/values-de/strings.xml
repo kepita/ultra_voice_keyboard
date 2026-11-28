@@ -149,6 +149,9 @@
     <string name="subs_waiting">Warte auf Audio…</string>
     <string name="subs_notification_title">Live-Untertitel aktiv</string>
     <string name="subs_notification_text">Untertitelt den Ton, der auf diesem Gerät abgespielt wird</string>
+    <string name="bg_recording_channel">Aufnahme im Hintergrund</string>
+    <string name="bg_recording_title">Sprachtastatur hört zu</string>
+    <string name="bg_recording_text">Kehre zur App zurück, in der du geschrieben hast, und tippe zum Beenden</string>
     <string name="subs_stop">Beenden</string>
     <string name="subs_grant_overlay">Bitte erlaube „Über anderen Apps einblenden“</string>
     <string name="subs_overlay_required">Live-Untertitel benötigen die Berechtigung „Über anderen Apps einblenden“</string>

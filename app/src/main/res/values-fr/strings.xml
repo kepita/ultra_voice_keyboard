@@ -149,6 +149,9 @@
     <string name="subs_waiting">En attente d\'audio…</string>
     <string name="subs_notification_title">Sous-titres en direct actifs</string>
     <string name="subs_notification_text">Sous-titrage du son lu sur cet appareil</string>
+    <string name="bg_recording_channel">Enregistrement en arrière-plan</string>
+    <string name="bg_recording_title">Le clavier vocal écoute</string>
+    <string name="bg_recording_text">Revenez à l\'application où vous écriviez et touchez pour arrêter</string>
     <string name="subs_stop">Arrêter</string>
     <string name="subs_grant_overlay">Veuillez autoriser « Afficher par-dessus les autres applis »</string>
     <string name="subs_overlay_required">Les sous-titres en direct nécessitent l\'autorisation « Afficher par-dessus les autres applis »</string>

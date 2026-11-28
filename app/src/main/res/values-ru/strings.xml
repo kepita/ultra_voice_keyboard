@@ -149,6 +149,9 @@
     <string name="subs_waiting">Ожидание звука…</string>
     <string name="subs_notification_title">Живые субтитры включены</string>
     <string name="subs_notification_text">Субтитры для звука на этом устройстве</string>
+    <string name="bg_recording_channel">Запись в фоне</string>
+    <string name="bg_recording_title">Голосовая клавиатура слушает</string>
+    <string name="bg_recording_text">Вернитесь в приложение, где вы печатали, и нажмите, чтобы остановить</string>
     <string name="subs_stop">Остановить</string>
     <string name="subs_grant_overlay">Разрешите «Поверх других приложений»</string>
     <string name="subs_overlay_required">Для живых субтитров нужно разрешение «Поверх других приложений»</string>
