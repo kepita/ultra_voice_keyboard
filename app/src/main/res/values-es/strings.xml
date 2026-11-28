@@ -95,6 +95,7 @@
     <string name="section_benchmark">Prueba de rendimiento</string>
     <string name="desc_benchmark">Mide la velocidad de transcripción del modelo activo en este dispositivo usando una grabación de prueba en inglés integrada (11 s).</string>
     <string name="btn_benchmark">Iniciar prueba</string>
+    <string name="app_version">Versión %1$s</string>
     <string name="bench_running">Ejecutando prueba…</string>
     <string name="bench_result">%1$s s de audio en %2$s s: %3$s× tiempo real</string>
     <string name="bench_error">La prueba falló: %1$s</string>
