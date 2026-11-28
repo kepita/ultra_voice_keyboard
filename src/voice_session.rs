@@ -300,6 +300,8 @@ pub fn stop_recording(mut env: JNIEnv, state: &mut VoiceSessionState) {
                 }
                 Err(e) => notify_status(&mut env, obj, &format!("Error: {}", e)),
             }
+            // Only the model just used stays in memory.
+            engine::release_other(slot);
         } else {
             notify_status(&mut env, obj, "Error: model not loaded");
         }

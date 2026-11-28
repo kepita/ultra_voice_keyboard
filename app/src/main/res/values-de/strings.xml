@@ -69,7 +69,7 @@
     <string name="models_no_browser">Kein Browser gefunden, um den Link zu öffnen.</string>
     <string name="models_delete">Modell löschen</string>
     <string name="models_delete_confirm">%1$s aus dem Speicher der App löschen?</string>
-    <string name="models_roles_hint">Tippe beim Modell, das überall verwendet werden soll, auf „International“. Optional tippst du bei einem zweiten, rein englischen Modell (z. B. Parakeet TDT 110M aus „Wo gibt es Modelle?“) auf „Englisch“: Die Sprachtastatur und das Spracheingabe-Fenster zeigen dann beim Diktieren einen Schalter International / Englisch. Live-Untertitel, geteilte Dateien und der Spracherkennungsdienst des Systems verwenden immer das internationale Modell. Sobald beide benutzt wurden, bleiben beide geladen, was mehr Speicher braucht.</string>
+    <string name="models_roles_hint">Tippe beim Modell, das überall verwendet werden soll, auf „International“. Optional tippst du bei einem zweiten, rein englischen Modell (z. B. Parakeet TDT 110M aus „Wo gibt es Modelle?“) auf „Englisch“: Die Sprachtastatur und das Spracheingabe-Fenster zeigen dann beim Diktieren einen Schalter International / Englisch. Live-Untertitel, geteilte Dateien und der Spracherkennungsdienst des Systems verwenden immer das internationale Modell. Nach jedem Diktat wird das nicht benutzte Modell entladen, um Speicher zu sparen; das erste Diktat nach einem Wechsel dauert daher etwas länger.</string>
     <string name="models_use_as_title">%1$s verwenden als</string>
     <string name="models_use_as_international">International: das Hauptmodell, überall verwendet</string>
     <string name="models_use_as_english">Englisch: beim Diktieren umschalten</string>

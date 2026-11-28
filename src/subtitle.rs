@@ -98,6 +98,11 @@ struct LiveSubtitleState {
 
 static LIVE_STATE: Lazy<Mutex<Option<LiveSubtitleState>>> = Lazy::new(|| Mutex::new(None));
 
+/// True while live subtitles run (they keep using the main model).
+pub fn is_running() -> bool {
+    LIVE_STATE.lock().unwrap().is_some()
+}
+
 #[no_mangle]
 pub unsafe extern "system" fn Java_dev_notune_transcribe_LiveSubtitleService_initNative(
     env: JNIEnv,

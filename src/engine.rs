@@ -42,8 +42,9 @@ const ENGLISH_MODEL_BUILTIN: &str = "builtin";
 /// Language hint for the English slot.
 const ENGLISH_LANGUAGE: &str = "en";
 
-/// Which of the engines to use. Both load independently and stay loaded, so
-/// switching between them while recording costs nothing once both are warm.
+/// Which of the engines to use. Both load independently. After voice input
+/// transcribes, the slot it didn't use is unloaded to free its memory (see
+/// [`release_other`]); switching to it starts loading it again right away.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Slot {
     /// The international model (`active_model`), used by every feature.
@@ -498,6 +499,32 @@ pub fn reset(slot: Slot) {
     while *state == LoadState::Loading {
         state = cvar.wait(state).unwrap();
     }
+    *st.engine.lock().unwrap() = None;
+    *st.loaded_config.lock().unwrap() = None;
+    *state = LoadState::Idle;
+}
+
+/// After voice input transcribed with `used`, unloads the other slot's model
+/// so only one model sits in memory. Kept when:
+/// - it is the main model and live subtitles are running (they use it);
+/// - it is loading right now: someone (e.g. the next recording, switched to
+///   that model) just asked for it.
+/// Users still holding the engine (a transcription in flight) keep it alive
+/// through their `Arc` until they finish; the memory is freed after that.
+pub fn release_other(used: Slot) {
+    let other = match used {
+        Slot::Main => Slot::English,
+        Slot::English => Slot::Main,
+    };
+    if other == Slot::Main && crate::subtitle::is_running() {
+        return;
+    }
+    let st = other.state();
+    let mut state = st.load.0.lock().unwrap();
+    if *state == LoadState::Loading || st.engine.lock().unwrap().is_none() {
+        return;
+    }
+    log::info!("unloading the {:?} model (voice input used {:?})", other, used);
     *st.engine.lock().unwrap() = None;
     *st.loaded_config.lock().unwrap() = None;
     *state = LoadState::Idle;

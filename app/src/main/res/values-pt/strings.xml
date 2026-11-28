@@ -69,7 +69,7 @@
     <string name="models_no_browser">Nenhum navegador encontrado para abrir o link.</string>
     <string name="models_delete">Excluir modelo</string>
     <string name="models_delete_confirm">Excluir %1$s do armazenamento do app?</string>
-    <string name="models_roles_hint">Toque em Internacional no modelo a usar em todo o lado. Opcionalmente, toque em Inglês num segundo modelo só de inglês (p. ex. Parakeet TDT 110M, em «Onde obter modelos»): o teclado de voz e o painel de entrada de voz mostram então um seletor Internacional / Inglês durante o ditado. As legendas ao vivo, os ficheiros partilhados e o serviço de voz do sistema usam sempre o modelo internacional. Depois de usados os dois, ambos ficam carregados, o que precisa de mais memória.</string>
+    <string name="models_roles_hint">Toque em Internacional no modelo a usar em todo o lado. Opcionalmente, toque em Inglês num segundo modelo só de inglês (p. ex. Parakeet TDT 110M, em «Onde obter modelos»): o teclado de voz e o painel de entrada de voz mostram então um seletor Internacional / Inglês durante o ditado. As legendas ao vivo, os ficheiros partilhados e o serviço de voz do sistema usam sempre o modelo internacional. Após cada ditado, o modelo que não usou é descarregado para poupar memória, por isso o primeiro ditado depois de mudar demora um pouco mais.</string>
     <string name="models_use_as_title">Usar %1$s como</string>
     <string name="models_use_as_international">Internacional: o modelo principal, usado em todo o lado</string>
     <string name="models_use_as_english">Inglês: escolha-o durante o ditado</string>

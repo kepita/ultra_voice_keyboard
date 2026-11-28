@@ -74,7 +74,7 @@
     <string name="models_no_browser">No browser found to open the link.</string>
     <string name="models_delete">Delete model</string>
     <string name="models_delete_confirm">Delete %1$s from the app\'s storage?</string>
-    <string name="models_roles_hint">Tap International on the model to use everywhere. Optionally tap English on a second, English-only model (e.g. Parakeet TDT 110M from “Where to get models”): the voice keyboard and the voice-input panel then show an International / English switch while you dictate. Live subtitles, shared files and the system speech service always use the International model. Once both have been used, both stay loaded, which needs more memory.</string>
+    <string name="models_roles_hint">Tap International on the model to use everywhere. Optionally tap English on a second, English-only model (e.g. Parakeet TDT 110M from “Where to get models”): the voice keyboard and the voice-input panel then show an International / English switch while you dictate. Live subtitles, shared files and the system speech service always use the International model. After each dictation, the model you didn\'t use is unloaded to save memory, so the first dictation after switching takes a moment longer.</string>
     <string name="models_use_as_title">Use %1$s as</string>
     <string name="models_use_as_international">International: the main model, used everywhere</string>
     <string name="models_use_as_english">English: switch to it while dictating</string>

@@ -69,7 +69,7 @@
     <string name="models_no_browser">Nessun browser trovato per aprire il link.</string>
     <string name="models_delete">Elimina modello</string>
     <string name="models_delete_confirm">Eliminare %1$s dall\'archivio dell\'app?</string>
-    <string name="models_roles_hint">Tocca Internazionale sul modello da usare ovunque. Se vuoi, tocca Inglese su un secondo modello solo inglese (ad es. Parakeet TDT 110M da «Dove trovare i modelli»): la tastiera vocale e il pannello di input vocale mostrano allora un selettore Internazionale / Inglese durante la dettatura. I sottotitoli in tempo reale, i file condivisi e il servizio vocale di sistema usano sempre il modello internazionale. Una volta usati entrambi, restano caricati tutti e due, il che richiede più memoria.</string>
+    <string name="models_roles_hint">Tocca Internazionale sul modello da usare ovunque. Se vuoi, tocca Inglese su un secondo modello solo inglese (ad es. Parakeet TDT 110M da «Dove trovare i modelli»): la tastiera vocale e il pannello di input vocale mostrano allora un selettore Internazionale / Inglese durante la dettatura. I sottotitoli in tempo reale, i file condivisi e il servizio vocale di sistema usano sempre il modello internazionale. Dopo ogni dettatura, il modello non usato viene scaricato per risparmiare memoria, quindi la prima dettatura dopo un cambio richiede un po\' più di tempo.</string>
     <string name="models_use_as_title">Usa %1$s come</string>
     <string name="models_use_as_international">Internazionale: il modello principale, usato ovunque</string>
     <string name="models_use_as_english">Inglese: da scegliere durante la dettatura</string>

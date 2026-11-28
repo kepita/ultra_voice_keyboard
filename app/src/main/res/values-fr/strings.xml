@@ -69,7 +69,7 @@
     <string name="models_no_browser">Aucun navigateur trouvé pour ouvrir le lien.</string>
     <string name="models_delete">Supprimer le modèle</string>
     <string name="models_delete_confirm">Supprimer %1$s du stockage de l\'application ?</string>
-    <string name="models_roles_hint">Touchez International sur le modèle à utiliser partout. Si vous le souhaitez, touchez Anglais sur un second modèle uniquement anglais (par ex. Parakeet TDT 110M, voir « Où trouver des modèles ») : le clavier vocal et le panneau de saisie vocale affichent alors un sélecteur International / Anglais pendant la dictée. Les sous-titres en direct, les fichiers partagés et le service de reconnaissance vocale du système utilisent toujours le modèle international. Une fois les deux utilisés, ils restent chargés, ce qui demande plus de mémoire.</string>
+    <string name="models_roles_hint">Touchez International sur le modèle à utiliser partout. Si vous le souhaitez, touchez Anglais sur un second modèle uniquement anglais (par ex. Parakeet TDT 110M, voir « Où trouver des modèles ») : le clavier vocal et le panneau de saisie vocale affichent alors un sélecteur International / Anglais pendant la dictée. Les sous-titres en direct, les fichiers partagés et le service de reconnaissance vocale du système utilisent toujours le modèle international. Après chaque dictée, le modèle non utilisé est déchargé pour économiser la mémoire ; la première dictée après un changement prend donc un peu plus de temps.</string>
     <string name="models_use_as_title">Utiliser %1$s comme</string>
     <string name="models_use_as_international">International : le modèle principal, utilisé partout</string>
     <string name="models_use_as_english">Anglais : à choisir pendant la dictée</string>

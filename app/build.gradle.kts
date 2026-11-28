@@ -18,7 +18,7 @@ val targetAbis = (project.findProperty("targetAbis") as String? ?: "arm64-v8a")
 // get "-dev.<commits since the tag>+<commit>" so test builds can't pass for a
 // release. Without git or a fork tag (e.g. a shallow clone), the fallback is
 // used: keep it at the latest release.
-val fallbackVersion = "0.2.3-ultra.5"
+val fallbackVersion = "0.2.3-ultra.6"
 
 fun gitDescribe(): String? = try {
     val out = providers.exec {
