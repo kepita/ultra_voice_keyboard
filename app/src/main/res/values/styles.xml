@@ -29,4 +29,24 @@
              result themselves (SwiftKey) lose it much more often. -->
         <item name="android:windowSoftInputMode">stateUnspecified</item>
     </style>
+
+    <!-- A button of the International / English switch (view_model_choice):
+         compact, outlined when not selected, filled in the primary color with
+         a checkmark (set by ModelChoiceToggle) when selected. -->
+    <style name="Widget.UltraVoice.ModelChoiceButton" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/model_choice_fg</item>
+        <item name="backgroundTint">@color/model_choice_bg</item>
+        <item name="strokeColor">?attr/colorOutline</item>
+        <item name="iconTint">@color/model_choice_fg</item>
+        <item name="iconSize">16dp</item>
+        <item name="iconPadding">4dp</item>
+        <item name="iconGravity">textStart</item>
+    </style>
 </resources>
