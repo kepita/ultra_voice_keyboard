@@ -33,7 +33,7 @@
     <string name="setting_pause_audio_desc">Metti in pausa l\'audio durante la registrazione</string>
 
     <string name="setting_record_background">Registra in background</string>
-    <string name="setting_record_background_desc">Continua a registrare quando la tastiera vocale è nascosta; il testo viene inserito al ritorno</string>
+    <string name="setting_record_background_desc">Continua a registrare quando la tastiera vocale è nascosta, anche se cambi app durante la registrazione; il testo viene inserito quando torni all\'app originale</string>
 
     <string name="setting_auto_stop">Arresto automatico dopo il silenzio</string>
     <string name="setting_auto_stop_desc">Chiudi la finestra di immissione vocale automaticamente ~2 secondi dopo la fine del parlato</string>

@@ -33,7 +33,7 @@
     <string name="setting_pause_audio_desc">Mettre l\'audio en pause pendant l\'enregistrement</string>
 
     <string name="setting_record_background">Enregistrer en arrière-plan</string>
-    <string name="setting_record_background_desc">Continuer l\'enregistrement quand le clavier vocal est masqué ; le texte est inséré à votre retour</string>
+    <string name="setting_record_background_desc">Continuer l\'enregistrement quand le clavier vocal est masqué, même si vous changez d\'application en cours d\'enregistrement ; le texte est inséré à votre retour dans l\'application d\'origine</string>
 
     <string name="setting_auto_stop">Arrêt automatique après un silence</string>
     <string name="setting_auto_stop_desc">Fermer automatiquement la fenêtre de saisie vocale ~2 secondes après la fin de la parole</string>

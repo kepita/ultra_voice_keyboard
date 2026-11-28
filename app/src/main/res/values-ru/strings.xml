@@ -33,7 +33,7 @@
     <string name="setting_pause_audio_desc">Приостанавливать аудио во время записи</string>
 
     <string name="setting_record_background">Запись в фоне</string>
-    <string name="setting_record_background_desc">Продолжать запись, когда голосовая клавиатура скрыта; текст вставляется по возвращении</string>
+    <string name="setting_record_background_desc">Продолжать запись, когда голосовая клавиатура скрыта, даже если вы переключитесь на другое приложение во время записи; текст вставляется при возвращении в исходное приложение</string>
 
     <string name="setting_auto_stop">Автостоп при тишине</string>
     <string name="setting_auto_stop_desc">Автоматически закрывать окно голосового ввода примерно через 2 секунды после окончания речи</string>

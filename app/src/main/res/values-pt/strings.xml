@@ -33,7 +33,7 @@
     <string name="setting_pause_audio_desc">Pausar o áudio durante a gravação</string>
 
     <string name="setting_record_background">Gravar em segundo plano</string>
-    <string name="setting_record_background_desc">Continuar gravando quando o teclado de voz está oculto; o texto é inserido ao voltar</string>
+    <string name="setting_record_background_desc">Continuar gravando quando o teclado de voz está oculto, mesmo se você trocar de app durante a gravação; o texto é inserido ao voltar ao app original</string>
 
     <string name="setting_auto_stop">Parada automática após silêncio</string>
     <string name="setting_auto_stop_desc">Fechar a janela de entrada de voz automaticamente ~2 segundos após você parar de falar</string>
