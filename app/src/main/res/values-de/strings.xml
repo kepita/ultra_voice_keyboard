@@ -52,6 +52,7 @@
     <string name="model_desc_sensevoice">Englisch, Chinesisch, Kantonesisch, Japanisch, Koreanisch; schnell</string>
     <string name="model_desc_whisper_small">99 Sprachen, kompakt; übersetzt ins Englische</string>
     <string name="model_desc_nemotron">40 Sprachen inkl. Chinesisch, Japanisch, Koreanisch, Arabisch, Hindi; mit Interpunktion</string>
+    <string name="model_desc_parakeet_v2">Nur Englisch, am genauesten für Englisch; empfohlenes englisches Modell</string>
     <string name="model_desc_parakeet_v3_q8">Parakeet TDT 0.6B v3 mit höherer Präzision</string>
     <string name="model_desc_whisper_turbo">99 Sprachen, am genauesten in dieser Liste; kann nicht übersetzen</string>
     <string name="model_desc_browse">Alle transcribe.cpp-Modelle durchstöbern</string>
@@ -69,7 +70,7 @@
     <string name="models_no_browser">Kein Browser gefunden, um den Link zu öffnen.</string>
     <string name="models_delete">Modell löschen</string>
     <string name="models_delete_confirm">%1$s aus dem Speicher der App löschen?</string>
-    <string name="models_roles_hint">Tippe beim Modell, das überall verwendet werden soll, auf „International“. Optional tippst du bei einem zweiten, rein englischen Modell (z. B. Parakeet TDT 110M aus „Wo gibt es Modelle?“) auf „Englisch“: Die Sprachtastatur und das Spracheingabe-Fenster zeigen dann beim Diktieren einen Schalter International / Englisch. Live-Untertitel, geteilte Dateien und der Spracherkennungsdienst des Systems verwenden immer das internationale Modell. Nach jedem Diktat wird das nicht benutzte Modell entladen, um Speicher zu sparen; das erste Diktat nach einem Wechsel dauert daher etwas länger.</string>
+    <string name="models_roles_hint">Tippe beim Modell, das überall verwendet werden soll, auf „International“. Optional tippst du bei einem zweiten, rein englischen Modell (z. B. Parakeet TDT 0.6B v2 aus „Wo gibt es Modelle?“) auf „Englisch“: Die Sprachtastatur und das Spracheingabe-Fenster zeigen dann beim Diktieren einen Schalter International / Englisch. Live-Untertitel, geteilte Dateien und der Spracherkennungsdienst des Systems verwenden immer das internationale Modell. Nach jedem Diktat wird das nicht benutzte Modell entladen, um Speicher zu sparen; das erste Diktat nach einem Wechsel dauert daher etwas länger.</string>
     <string name="models_use_as_title">%1$s verwenden als</string>
     <string name="models_use_as_international">International: das Hauptmodell, überall verwendet</string>
     <string name="models_use_as_english">Englisch: beim Diktieren umschalten</string>
