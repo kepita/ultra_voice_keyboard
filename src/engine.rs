@@ -1,11 +1,13 @@
 //! Loads and serves the speech-to-text engine (transcribe.cpp, GGUF models).
 //!
-//! The engine is a process-wide singleton behind `Arc<Mutex<..>>`: a
-//! transcribe.cpp session may only be used by one thread at a time, which the
-//! mutex guarantees. Model selection is read from marker files in filesDir
-//! (written by `ModelsActivity`): an imported GGUF if one is selected, the
-//! bundled model otherwise — with the bundled model as fallback if the
-//! imported one fails to load.
+//! There is one engine per [`Slot`], each a process-wide singleton behind
+//! `Arc<Mutex<..>>`: a transcribe.cpp session may only be used by one thread
+//! at a time, which the mutex guarantees. The main slot is the international
+//! model every feature uses; the optional English slot is a second model the
+//! voice input can switch to while recording. Model selection is read from
+//! marker files in filesDir (written by `ModelsActivity`): an imported GGUF
+//! if one is selected, the bundled model otherwise — with the bundled model
+//! as fallback if the imported one fails to load.
 
 use once_cell::sync::Lazy;
 use std::path::{Path, PathBuf};
@@ -30,6 +32,26 @@ const MODEL_TRANSLATE_FILE: &str = "model_translate";
 /// Optional file in filesDir with the CPU thread count for inference.
 /// Absent/invalid/0 = default (all cores).
 const MODEL_THREADS_FILE: &str = "model_threads";
+/// File in filesDir naming the model of the English slot: an imported GGUF
+/// under `models/`, or [`ENGLISH_MODEL_BUILTIN`] for the bundled model.
+/// Absent or empty = no English model (voice input uses the main one).
+const ENGLISH_MODEL_FILE: &str = "english_model";
+/// `english_model` value selecting the bundled model. Never an imported
+/// model's name: those always end in `.gguf`.
+const ENGLISH_MODEL_BUILTIN: &str = "builtin";
+/// Language hint for the English slot.
+const ENGLISH_LANGUAGE: &str = "en";
+
+/// Which of the engines to use. Both load independently. After voice input
+/// transcribes, the slot it didn't use is unloaded to free its memory (see
+/// [`release_other`]); switching to it starts loading it again right away.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Slot {
+    /// The international model (`active_model`), used by every feature.
+    Main,
+    /// The optional English model (`english_model`), picked in voice input.
+    English,
+}
 
 /// Longest audio passed to the model in one run (60 s). Offline conformer
 /// models use full self-attention, whose cost grows quadratically with input
@@ -213,16 +235,42 @@ impl Engine {
     }
 }
 
-/// Holds the loaded engine singleton.
-static GLOBAL_ENGINE: Lazy<Mutex<Option<Arc<Mutex<Engine>>>>> =
-    Lazy::new(|| Mutex::new(None));
+/// Everything one slot needs: its engine, the settings it was loaded with,
+/// and the load coordination.
+struct SlotState {
+    /// The loaded engine, if any.
+    engine: Mutex<Option<Arc<Mutex<Engine>>>>,
+    /// The settings the loaded engine was built from, and where they live.
+    /// Comparing against the files on disk before transcribing makes any
+    /// user of the engine pick up a changed model or language, whichever
+    /// screen changed it, instead of keeping the old one until the process
+    /// dies.
+    loaded_config: Mutex<Option<(PathBuf, EngineConfig)>>,
+    /// Loading coordination state + condvar for waiters.
+    load: (Mutex<LoadState>, Condvar),
+}
 
-/// The settings the loaded engine was built from, and where they live.
-/// Comparing against the files on disk before transcribing makes any user of
-/// the engine pick up a changed model or language, whichever screen changed
-/// it, instead of keeping the old one until the process dies.
-static LOADED_CONFIG: Lazy<Mutex<Option<(PathBuf, EngineConfig)>>> =
-    Lazy::new(|| Mutex::new(None));
+impl SlotState {
+    fn new() -> SlotState {
+        SlotState {
+            engine: Mutex::new(None),
+            loaded_config: Mutex::new(None),
+            load: (Mutex::new(LoadState::Idle), Condvar::new()),
+        }
+    }
+}
+
+static MAIN_SLOT: Lazy<SlotState> = Lazy::new(SlotState::new);
+static ENGLISH_SLOT: Lazy<SlotState> = Lazy::new(SlotState::new);
+
+impl Slot {
+    fn state(self) -> &'static SlotState {
+        match self {
+            Slot::Main => &MAIN_SLOT,
+            Slot::English => &ENGLISH_SLOT,
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 struct EngineConfig {
@@ -236,31 +284,56 @@ struct EngineConfig {
 }
 
 impl EngineConfig {
-    fn read(files_dir: &Path) -> EngineConfig {
-        let active_model = read_config(&files_dir.join(ACTIVE_MODEL_FILE));
+    /// The settings of `slot`; `None` if the slot has no model configured
+    /// (only possible for the English slot).
+    fn read(files_dir: &Path, slot: Slot) -> Option<EngineConfig> {
+        let threads = read_config(&files_dir.join(MODEL_THREADS_FILE))
+            .and_then(|s| s.parse::<i32>().ok())
+            .filter(|&n| n > 0);
+        let (active_model, language, translate) = match slot {
+            Slot::Main => (
+                read_config(&files_dir.join(ACTIVE_MODEL_FILE)),
+                // Absent/empty or "auto" = no hint (the model's automatic
+                // mode). A tag the model doesn't know is degraded per run
+                // (Engine::run).
+                read_config(&files_dir.join(MODEL_LANGUAGE_FILE))
+                    .filter(|l| !l.eq_ignore_ascii_case("auto")),
+                files_dir.join(MODEL_TRANSLATE_FILE).exists(),
+            ),
+            Slot::English => {
+                let name = read_config(&files_dir.join(ENGLISH_MODEL_FILE))?;
+                let model = (name != ENGLISH_MODEL_BUILTIN).then_some(name);
+                // English speech to English text: translating is moot.
+                (model, Some(ENGLISH_LANGUAGE.to_string()), false)
+            }
+        };
         let model_stamp = active_model.as_ref().and_then(|name| {
             let meta = std::fs::metadata(files_dir.join("models").join(name)).ok()?;
             Some((meta.len(), meta.modified().ok()))
         });
-        EngineConfig {
+        Some(EngineConfig {
             active_model,
             model_stamp,
-            // Absent/empty or "auto" = no hint (the model's automatic mode).
-            // A tag the model doesn't know is degraded per run (Engine::run).
-            language: read_config(&files_dir.join(MODEL_LANGUAGE_FILE))
-                .filter(|l| !l.eq_ignore_ascii_case("auto")),
-            translate: files_dir.join(MODEL_TRANSLATE_FILE).exists(),
-            threads: read_config(&files_dir.join(MODEL_THREADS_FILE))
-                .and_then(|s| s.parse::<i32>().ok())
-                .filter(|&n| n > 0),
-        }
+            language,
+            translate,
+            threads,
+        })
     }
 }
 
-/// True if the model settings changed since the engine was loaded.
-fn config_is_stale() -> bool {
-    match &*LOADED_CONFIG.lock().unwrap() {
-        Some((dir, loaded)) => EngineConfig::read(dir) != *loaded,
+/// True if an English model is selected. Without one, voice input set to
+/// English uses the main model.
+pub fn english_configured(env: &mut JNIEnv, context: &JObject) -> bool {
+    match assets::files_dir(env, context) {
+        Ok(dir) => EngineConfig::read(&dir, Slot::English).is_some(),
+        Err(_) => false,
+    }
+}
+
+/// True if the model settings of `slot` changed since its engine was loaded.
+fn config_is_stale(slot: Slot) -> bool {
+    match &*slot.state().loaded_config.lock().unwrap() {
+        Some((dir, loaded)) => EngineConfig::read(dir, slot).as_ref() != Some(loaded),
         None => false,
     }
 }
@@ -268,27 +341,30 @@ fn config_is_stale() -> bool {
 /// Drops the engine if its settings are outdated, so the next load picks up
 /// the current ones. Re-checked under the load lock, so concurrent callers
 /// don't throw away a load that already uses the new settings.
-fn reset_if_stale() {
-    let (lock, cvar) = &*LOAD_STATE;
+fn reset_if_stale(slot: Slot) {
+    let st = slot.state();
+    let (lock, cvar) = &st.load;
     let mut state = lock.lock().unwrap();
     while *state == LoadState::Loading {
         state = cvar.wait(state).unwrap();
     }
-    if config_is_stale() {
-        log::info!("model settings changed; reloading the engine");
-        *GLOBAL_ENGINE.lock().unwrap() = None;
+    if config_is_stale(slot) {
+        log::info!("{:?} model settings changed; reloading the engine", slot);
+        *st.engine.lock().unwrap() = None;
+        *st.loaded_config.lock().unwrap() = None;
         *state = LoadState::Idle;
     }
 }
 
-/// True if the engine is loaded and matches the current settings.
+/// True if the main engine is loaded and matches the current settings.
 pub fn is_current() -> bool {
-    is_engine_loaded() && !config_is_stale()
+    is_current_slot(Slot::Main)
 }
 
-/// Loading coordination state + condvar for waiters.
-static LOAD_STATE: Lazy<(Mutex<LoadState>, Condvar)> =
-    Lazy::new(|| (Mutex::new(LoadState::Idle), Condvar::new()));
+/// True if the engine of `slot` is loaded and matches the current settings.
+pub fn is_current_slot(slot: Slot) -> bool {
+    is_slot_loaded(slot) && !config_is_stale(slot)
+}
 
 #[derive(Debug, Clone, PartialEq)]
 enum LoadState {
@@ -302,8 +378,13 @@ enum LoadState {
     Failed(String),
 }
 
+/// The main engine.
 pub fn get_engine() -> Option<Arc<Mutex<Engine>>> {
-    GLOBAL_ENGINE.lock().unwrap().clone()
+    get_engine_slot(Slot::Main)
+}
+
+pub fn get_engine_slot(slot: Slot) -> Option<Arc<Mutex<Engine>>> {
+    slot.state().engine.lock().unwrap().clone()
 }
 
 /// Number of voice-input transcriptions (keyboard, popup, speech service,
@@ -403,21 +484,49 @@ fn transcribe_guarded(engine: &Arc<Mutex<Engine>>, samples: Vec<f32>) -> Result<
     result
 }
 
-pub fn is_engine_loaded() -> bool {
-    GLOBAL_ENGINE.lock().unwrap().is_some()
+fn is_slot_loaded(slot: Slot) -> bool {
+    slot.state().engine.lock().unwrap().is_some()
 }
 
-/// Drops the loaded engine and clears the load state so the next
+/// Drops the loaded engine of `slot` and clears its load state so the next
 /// `ensure_loaded*` call reloads with the current model selection. Waits for
 /// an in-flight load to finish first, so a reload can't race a load of the
 /// previous selection. Call from a background thread.
-pub fn reset() {
-    let (lock, cvar) = &*LOAD_STATE;
+pub fn reset(slot: Slot) {
+    let st = slot.state();
+    let (lock, cvar) = &st.load;
     let mut state = lock.lock().unwrap();
     while *state == LoadState::Loading {
         state = cvar.wait(state).unwrap();
     }
-    *GLOBAL_ENGINE.lock().unwrap() = None;
+    *st.engine.lock().unwrap() = None;
+    *st.loaded_config.lock().unwrap() = None;
+    *state = LoadState::Idle;
+}
+
+/// After voice input transcribed with `used`, unloads the other slot's model
+/// so only one model sits in memory. Kept when:
+/// - it is the main model and live subtitles are running (they use it);
+/// - it is loading right now: someone (e.g. the next recording, switched to
+///   that model) just asked for it.
+/// Users still holding the engine (a transcription in flight) keep it alive
+/// through their `Arc` until they finish; the memory is freed after that.
+pub fn release_other(used: Slot) {
+    let other = match used {
+        Slot::Main => Slot::English,
+        Slot::English => Slot::Main,
+    };
+    if other == Slot::Main && crate::subtitle::is_running() {
+        return;
+    }
+    let st = other.state();
+    let mut state = st.load.0.lock().unwrap();
+    if *state == LoadState::Loading || st.engine.lock().unwrap().is_none() {
+        return;
+    }
+    log::info!("unloading the {:?} model (voice input used {:?})", other, used);
+    *st.engine.lock().unwrap() = None;
+    *st.loaded_config.lock().unwrap() = None;
     *state = LoadState::Idle;
 }
 
@@ -432,18 +541,31 @@ fn notify_status(env: &mut JNIEnv, obj: &JObject, msg: &str) {
     }
 }
 
-/// Ensures the engine is loaded. Safe to call from multiple threads
+/// Ensures the main engine is loaded. Safe to call from multiple threads
 /// concurrently; reports status via the target's `onStatusUpdate` callback.
 ///
 /// Convenience wrapper around [`ensure_loaded_from_thread`] for JNI entry
 /// points that already hold an attached `JNIEnv`.
 pub fn ensure_loaded(env: &mut JNIEnv, context: &JObject) -> Result<(), String> {
-    let jvm = Arc::new(env.get_java_vm().map_err(|e| e.to_string())?);
-    let context_ref = env.new_global_ref(context).map_err(|e| e.to_string())?;
-    ensure_loaded_from_thread(&jvm, &context_ref)
+    ensure_loaded_slot(env, context, Slot::Main)
 }
 
-/// Ensures the engine is loaded. Safe to call from multiple threads concurrently.
+/// [`ensure_loaded`] for the engine of `slot`.
+pub fn ensure_loaded_slot(env: &mut JNIEnv, context: &JObject, slot: Slot) -> Result<(), String> {
+    let jvm = Arc::new(env.get_java_vm().map_err(|e| e.to_string())?);
+    let context_ref = env.new_global_ref(context).map_err(|e| e.to_string())?;
+    ensure_loaded_slot_from_thread(&jvm, &context_ref, slot)
+}
+
+/// Ensures the main engine is loaded; see [`ensure_loaded_slot_from_thread`].
+pub fn ensure_loaded_from_thread(
+    jvm: &Arc<jni::JavaVM>,
+    target_ref: &GlobalRef,
+) -> Result<(), String> {
+    ensure_loaded_slot_from_thread(jvm, target_ref, Slot::Main)
+}
+
+/// Ensures the engine of `slot` is loaded. Safe to call from multiple threads concurrently.
 ///
 /// - If already loaded, returns immediately.
 /// - If another thread is loading, waits for it to finish.
@@ -451,9 +573,10 @@ pub fn ensure_loaded(env: &mut JNIEnv, context: &JObject) -> Result<(), String> 
 /// - If a previous load failed, retries.
 ///
 /// Reports status via the target's `onStatusUpdate` JNI callback.
-pub fn ensure_loaded_from_thread(
+pub fn ensure_loaded_slot_from_thread(
     jvm: &Arc<jni::JavaVM>,
     target_ref: &GlobalRef,
+    slot: Slot,
 ) -> Result<(), String> {
     let notify = |msg: &str| {
         if let Ok(mut env) = jvm.attach_current_thread() {
@@ -461,21 +584,21 @@ pub fn ensure_loaded_from_thread(
         }
     };
 
-    if config_is_stale() {
-        reset_if_stale();
+    if config_is_stale(slot) {
+        reset_if_stale(slot);
     }
 
     // Fast path: already loaded
-    if is_engine_loaded() {
+    if is_slot_loaded(slot) {
         notify("Ready");
         return Ok(());
     }
 
-    let (lock, cvar) = &*LOAD_STATE;
+    let (lock, cvar) = &slot.state().load;
     let mut state = lock.lock().unwrap();
 
     // Re-check under lock
-    if is_engine_loaded() {
+    if is_slot_loaded(slot) {
         notify("Ready");
         return Ok(());
     }
@@ -489,7 +612,7 @@ pub fn ensure_loaded_from_thread(
             }
             drop(state);
 
-            if is_engine_loaded() {
+            if is_slot_loaded(slot) {
                 notify("Ready");
                 Ok(())
             } else {
@@ -508,7 +631,7 @@ pub fn ensure_loaded_from_thread(
             drop(state);
 
             let result = if let Ok(mut env) = jvm.attach_current_thread() {
-                do_load(&mut env, target_ref.as_obj())
+                do_load(&mut env, target_ref.as_obj(), slot)
             } else {
                 Err("Failed to attach JNI thread".to_string())
             };
@@ -609,9 +732,10 @@ fn read_config(path: &Path) -> Option<String> {
 /// text (`ModelStore.NO_MODEL_STATUS`) to show its translated hint instead.
 const NO_MODEL_STATUS: &str = "Error: no speech model installed";
 
-/// Performs the model load: the selected imported GGUF if any (falling back
-/// to the bundled model on failure), otherwise the bundled model.
-fn do_load(env: &mut JNIEnv, context: &JObject) -> Result<(), String> {
+/// Performs the model load of `slot`: the selected imported GGUF if any
+/// (falling back to the bundled model on failure), otherwise the bundled
+/// model.
+fn do_load(env: &mut JNIEnv, context: &JObject, slot: Slot) -> Result<(), String> {
     if let Err(msg) = check_cpu_features() {
         notify_status(env, context, &format!("Error: {}", msg));
         return Err(msg);
@@ -622,7 +746,12 @@ fn do_load(env: &mut JNIEnv, context: &JObject) -> Result<(), String> {
         notify_status(env, context, &format!("Error: {}", msg));
         msg
     })?;
-    let config = EngineConfig::read(&files_dir);
+    let Some(config) = EngineConfig::read(&files_dir, slot) else {
+        let msg = "no English model selected".to_string();
+        notify_status(env, context, &format!("Error: {}", msg));
+        return Err(msg);
+    };
+    let st = slot.state();
     let language = config.language.clone();
     let translate = config.translate;
     let threads = config.threads.unwrap_or_else(performance_core_count);
@@ -634,8 +763,8 @@ fn do_load(env: &mut JNIEnv, context: &JObject) -> Result<(), String> {
         match Engine::load(&path, language.clone(), translate, threads) {
             Ok(engine) => {
                 let status = engine.ready_status;
-                *GLOBAL_ENGINE.lock().unwrap() = Some(Arc::new(Mutex::new(engine)));
-                *LOADED_CONFIG.lock().unwrap() = Some((files_dir, config));
+                *st.engine.lock().unwrap() = Some(Arc::new(Mutex::new(engine)));
+                *st.loaded_config.lock().unwrap() = Some((files_dir, config));
                 notify_status(env, context, status);
                 return Ok(());
             }
@@ -674,8 +803,8 @@ fn do_load(env: &mut JNIEnv, context: &JObject) -> Result<(), String> {
     match Engine::load(&path, language, translate, threads) {
         Ok(engine) => {
             let status = engine.ready_status;
-            *GLOBAL_ENGINE.lock().unwrap() = Some(Arc::new(Mutex::new(engine)));
-            *LOADED_CONFIG.lock().unwrap() = Some((files_dir, config));
+            *st.engine.lock().unwrap() = Some(Arc::new(Mutex::new(engine)));
+            *st.loaded_config.lock().unwrap() = Some((files_dir, config));
             notify_status(env, context, status);
             Ok(())
         }

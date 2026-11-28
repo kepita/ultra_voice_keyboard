@@ -46,7 +46,7 @@
 
     <string name="models_title">Modèles vocaux</string>
     <string name="models_section">Modèle vocal</string>
-    <string name="models_active_section">Modèle actif</string>
+    <string name="models_active_section">Modèles vocaux</string>
     <string name="models_builtin_sub">Inclus dans l\'application · 25 langues européennes</string>
     <string name="model_desc_parakeet110m">Anglais uniquement, petit et rapide</string>
     <string name="model_desc_sensevoice">Anglais, chinois, cantonais, japonais, coréen ; rapide</string>
@@ -69,6 +69,15 @@
     <string name="models_no_browser">Aucun navigateur trouvé pour ouvrir le lien.</string>
     <string name="models_delete">Supprimer le modèle</string>
     <string name="models_delete_confirm">Supprimer %1$s du stockage de l\'application ?</string>
+    <string name="models_roles_hint">Touchez International sur le modèle à utiliser partout. Si vous le souhaitez, touchez Anglais sur un second modèle uniquement anglais (par ex. Parakeet TDT 110M, voir « Où trouver des modèles ») : le clavier vocal et le panneau de saisie vocale affichent alors un sélecteur International / Anglais pendant la dictée. Les sous-titres en direct, les fichiers partagés et le service de reconnaissance vocale du système utilisent toujours le modèle international. Après chaque dictée, le modèle non utilisé est déchargé pour économiser la mémoire ; la première dictée après un changement prend donc un peu plus de temps.</string>
+    <string name="models_use_as_title">Utiliser %1$s comme</string>
+    <string name="models_use_as_international">International : le modèle principal, utilisé partout</string>
+    <string name="models_use_as_english">Anglais : à choisir pendant la dictée</string>
+    <string name="models_use_as_none">Importer seulement pour l\'instant</string>
+    <string name="models_english_saved">Modèle anglais enregistré. Choisissez-le pendant l\'enregistrement.</string>
+    <string name="models_english_removed">Modèle anglais désactivé</string>
+    <string name="model_choice_english">Anglais</string>
+    <string name="model_choice_international">International</string>
     <string name="models_language_section">Langue</string>
     <string name="models_language_desc">La langue transmise au modèle. « Automatique » laisse le modèle décider. Whisper et les autres modèles auxquels on peut indiquer la langue la respectent ; les modèles Parakeet détectent toujours la langue eux-mêmes et ignorent ce réglage. Les langues non prises en charge par le modèle actif sont ignorées.</string>
     <string name="models_language_auto">Automatique</string>

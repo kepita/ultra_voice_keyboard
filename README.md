@@ -81,6 +81,10 @@ This relies on the undocumented `PROJECT_MEDIA` app-op; on some OEM builds it ma
 
 The built-in Parakeet model works out of the box. (The F-Droid build has no built-in model, since F-Droid builds everything from source: on first start, the app shows how to download the same model in your browser and import it. The F-Droid build is reproducible and carries the same signature as the GitHub releases, which also include it as `…_fdroid.apk`, so you can switch between the GitHub/Obtainium and F-Droid versions without reinstalling.) Under **Manage speech models** you can additionally import any [transcribe.cpp](https://github.com/handy-computer/transcribe.cpp) GGUF model: download a `.gguf` file in your browser (the in-app *Where to get models* dialog lists direct links, e.g. a tiny 135 MB English-only Parakeet, the multilingual Nemotron 3.5 streaming model with punctuation, or Whisper large-v3-turbo), then import it via the system file picker and select it. The app itself needs no internet permission — model files are simply copied into the app's private storage. An optional language hint (e.g. `en-US`, or `auto`) can be set for imported models.
 
+#### English + international model
+
+Besides the main (international) model, you can pick an optional **English model** under *Manage speech models* — e.g. the small English-only Parakeet TDT 110M, or the built-in model if your main model is another one. Each model in the list has **International** and **English** chips to set its role, and after importing a model the app asks which role it takes. With an English model set, the voice keyboard and the voice-input panel show an **International / English** switch. You can flip it any time until you stop the recording: the model selected at that moment transcribes, and the choice is remembered for the next recording. The other model starts loading as soon as you switch, so it's usually ready when you stop speaking. Live subtitles, shared files and the system speech service always use the international model. To save memory, only one model stays loaded: after each dictation the other one is unloaded (the international model stays while live subtitles run), so the first dictation after switching takes a moment longer.
+
 ## Prerequisites
 
 | Dependency | Installation |
@@ -154,10 +158,12 @@ The built-in Parakeet TDT GGUF model (~485 MB) is automatically downloaded from 
 
 Versions come from git tags; there's no version number to edit by hand.
 
+**Current fork version: 0.2.3-ultra.6.** It isn't tagged yet, so builds use it as the fallback (see below) until the first release tag.
+
 - A fork release is a tag `v<upstream version>-ultra.<N>`, e.g. `v0.2.3-ultra.1` (based on upstream 0.2.3, fork release 1). Pushing the tag builds the release on GitHub.
 - A build of the tagged commit is version `0.2.3-ultra.1`. Commits after it build as `0.2.3-ultra.1-dev.3+abc1234` (3 commits later, at commit `abc1234`), and debug builds add `-debug`. The app shows its version at the bottom of the home screen.
 - The `versionCode` is computed from the name: `((MAJOR*100 + MINOR)*100 + PATCH)*100 + N`, so `0.2.3-ultra.1` → `20301`. It grows with every fork release and every new upstream base, so updates always install. MINOR, PATCH and N go up to 99.
-- To release, tag the commit and push the tag: `git tag v0.2.3-ultra.2 && git push origin v0.2.3-ultra.2`. After moving to a new upstream version, start again at `ultra.1`, e.g. `v0.2.4-ultra.1`.
+- To release, tag the commit and push the tag: `git tag v0.2.3-ultra.6 && git push origin v0.2.3-ultra.6`. After moving to a new upstream version, start again at `ultra.1`, e.g. `v0.2.4-ultra.1`.
 - Without git or a fork tag (e.g. a shallow clone or a source download), the build uses `fallbackVersion` in `app/build.gradle.kts`. Keep it at the latest release.
 - `./gradlew -q printVersionName` and `./gradlew -q printVersionCode` print what a build will use.
 

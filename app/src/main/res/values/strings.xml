@@ -50,7 +50,7 @@
     <!-- Speech model management (transcribe.cpp GGUF backend) -->
     <string name="models_title">Speech models</string>
     <string name="models_section">Speech model</string>
-    <string name="models_active_section">Active model</string>
+    <string name="models_active_section">Speech models</string>
     <string name="models_desc">The built-in model works out of the box. You can also import any transcribe.cpp GGUF model you\'ve downloaded. The app stays fully offline; downloads happen in your browser.</string>
     <string name="models_builtin">Parakeet TDT 0.6B v3</string>
     <string name="models_builtin_sub">Included in the app · 25 European languages</string>
@@ -74,6 +74,15 @@
     <string name="models_no_browser">No browser found to open the link.</string>
     <string name="models_delete">Delete model</string>
     <string name="models_delete_confirm">Delete %1$s from the app\'s storage?</string>
+    <string name="models_roles_hint">Tap International on the model to use everywhere. Optionally tap English on a second, English-only model (e.g. Parakeet TDT 110M from “Where to get models”): the voice keyboard and the voice-input panel then show an International / English switch while you dictate. Live subtitles, shared files and the system speech service always use the International model. After each dictation, the model you didn\'t use is unloaded to save memory, so the first dictation after switching takes a moment longer.</string>
+    <string name="models_use_as_title">Use %1$s as</string>
+    <string name="models_use_as_international">International: the main model, used everywhere</string>
+    <string name="models_use_as_english">English: switch to it while dictating</string>
+    <string name="models_use_as_none">Just import for now</string>
+    <string name="models_english_saved">English model saved. Switch to it while recording.</string>
+    <string name="models_english_removed">English model turned off</string>
+    <string name="model_choice_english">English</string>
+    <string name="model_choice_international">International</string>
     <string name="models_language_section">Language</string>
     <string name="models_language_desc">The language passed to the model. “Automatic” lets the model decide. Whisper and other models that can be told the language follow it; Parakeet models always detect the language themselves and ignore this setting. Languages the active model doesn\'t support are ignored.</string>
     <string name="models_language_auto">Automatic</string>

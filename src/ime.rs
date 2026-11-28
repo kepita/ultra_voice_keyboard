@@ -12,8 +12,9 @@ pub unsafe extern "system" fn Java_dev_notune_transcribe_RustInputMethodService_
     env: JNIEnv,
     _class: JClass,
     service: JObject,
+    use_english: jni::sys::jboolean,
 ) {
-    let state = voice_session::init_session(env, service);
+    let state = voice_session::init_session(env, service, use_english != 0);
     *IME_STATE.lock().unwrap() = Some(state);
 }
 
@@ -64,5 +65,19 @@ pub unsafe extern "system" fn Java_dev_notune_transcribe_RustInputMethodService_
     let mut guard = IME_STATE.lock().unwrap();
     if let Some(state) = guard.as_mut() {
         voice_session::cancel_recording(env, state);
+    }
+}
+
+/// The user switched between the English and the international model; may
+/// happen while recording.
+#[no_mangle]
+pub unsafe extern "system" fn Java_dev_notune_transcribe_RustInputMethodService_setModelChoice(
+    env: JNIEnv,
+    _class: JClass,
+    use_english: jni::sys::jboolean,
+) {
+    let mut guard = IME_STATE.lock().unwrap();
+    if let Some(state) = guard.as_mut() {
+        voice_session::set_model_choice(env, state, use_english != 0);
     }
 }

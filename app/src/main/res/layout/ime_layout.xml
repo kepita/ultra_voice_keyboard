@@ -25,6 +25,9 @@
             android:textAppearance="?attr/textAppearanceBodyMedium"
             android:paddingStart="4dp"/>
 
+        <!-- English / international model; changeable until recording stops -->
+        <include layout="@layout/view_model_choice"/>
+
         <ProgressBar
             android:id="@+id/ime_progress"
             style="?android:attr/progressBarStyleSmall"

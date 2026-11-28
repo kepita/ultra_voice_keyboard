@@ -24,7 +24,9 @@ pub unsafe extern "system" fn Java_dev_notune_transcribe_ModelsActivity_reloadMo
         Err(_) => return,
     };
     std::thread::spawn(move || {
-        engine::reset();
+        // Only the main model is reloaded right away; a stale English engine
+        // is dropped and reloaded the next time voice input uses it.
+        engine::reset(engine::Slot::Main);
         let _ = engine::ensure_loaded_from_thread(&vm, &activity_ref);
     });
 }

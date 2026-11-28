@@ -46,7 +46,7 @@
 
     <string name="models_title">Речевые модели</string>
     <string name="models_section">Речевая модель</string>
-    <string name="models_active_section">Активная модель</string>
+    <string name="models_active_section">Модели речи</string>
     <string name="models_builtin_sub">Встроена в приложение · 25 европейских языков</string>
     <string name="model_desc_parakeet110m">Только английский, маленькая и быстрая</string>
     <string name="model_desc_sensevoice">Английский, китайский, кантонский, японский, корейский; быстрая</string>
@@ -69,6 +69,15 @@
     <string name="models_no_browser">Не найден браузер для открытия ссылки.</string>
     <string name="models_delete">Удалить модель</string>
     <string name="models_delete_confirm">Удалить %1$s из хранилища приложения?</string>
+    <string name="models_roles_hint">Нажмите «Междунар.» у модели, которую нужно использовать везде. При желании нажмите «Англ.» у второй, только английской модели (например, Parakeet TDT 110M из списка «Где взять модели»): тогда голосовая клавиатура и панель голосового ввода покажут переключатель Междунар. / Англ. во время диктовки. Живые субтитры, общие файлы и системная служба распознавания речи всегда используют международную модель. После каждой диктовки неиспользованная модель выгружается, чтобы сэкономить память, поэтому первая диктовка после переключения занимает чуть больше времени.</string>
+    <string name="models_use_as_title">Использовать %1$s как</string>
+    <string name="models_use_as_international">Международная: основная модель, используется везде</string>
+    <string name="models_use_as_english">Английская: переключайтесь на неё во время диктовки</string>
+    <string name="models_use_as_none">Пока только импортировать</string>
+    <string name="models_english_saved">Английская модель сохранена. Выберите её во время записи.</string>
+    <string name="models_english_removed">Английская модель отключена</string>
+    <string name="model_choice_english">Англ.</string>
+    <string name="model_choice_international">Междунар.</string>
     <string name="models_language_section">Язык</string>
     <string name="models_language_desc">Язык, передаваемый модели. «Автоматически» позволяет модели решать сама. Whisper и другие модели, которым можно задать язык, его учитывают; модели Parakeet всегда определяют язык сами и игнорируют эту настройку. Языки, не поддерживаемые активной моделью, игнорируются.</string>
     <string name="models_language_auto">Автоматически</string>

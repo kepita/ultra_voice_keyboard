@@ -7,7 +7,7 @@ use jni::objects::{GlobalRef, JObject};
 use jni::JNIEnv;
 
 use crate::endpoint::Endpointer;
-use crate::engine;
+use crate::engine::{self, Slot};
 
 // --- Optional auto-stop endpointing ------------------------------------------
 /// Trailing silence after speech that triggers auto-stop.
@@ -28,6 +28,33 @@ pub struct VoiceSessionState {
     /// True while the current recording runs; flipped off on stop/cancel so
     /// the auto-stop monitor (if any) exits.
     pub session_active: Arc<AtomicBool>,
+    /// The user's model choice: the English model instead of the main
+    /// (international) one. Can change at any time while recording; the
+    /// value at stop decides which model transcribes.
+    pub use_english: bool,
+}
+
+/// The slot to transcribe with for a requested English/international
+/// choice: English only if an English model is selected at all.
+fn chosen_slot(env: &mut JNIEnv, target: &JObject, use_english: bool) -> Slot {
+    if use_english && engine::english_configured(env, target) {
+        Slot::English
+    } else {
+        Slot::Main
+    }
+}
+
+/// Loads the engine of `slot` in the background unless it is loaded and up
+/// to date, so it is ready by the time the recording stops.
+fn preload(state: &VoiceSessionState, slot: Slot) {
+    if engine::is_current_slot(slot) {
+        return;
+    }
+    let jvm = state.jvm.clone();
+    let target_ref = state.target_ref.clone();
+    std::thread::spawn(move || {
+        let _ = engine::ensure_loaded_slot_from_thread(&jvm, &target_ref, slot);
+    });
 }
 
 fn notify_status(env: &mut JNIEnv, obj: &JObject, msg: &str) {
@@ -56,7 +83,9 @@ fn notify_text(env: &mut JNIEnv, obj: &JObject, text: &str) {
     }
 }
 
-pub fn init_session(env: JNIEnv, target: JObject) -> VoiceSessionState {
+/// Sets up a session and loads the model of the initial choice
+/// (`use_english`) in the background.
+pub fn init_session(mut env: JNIEnv, target: JObject, use_english: bool) -> VoiceSessionState {
     android_logger::init_once(
         android_logger::Config::default().with_max_level(log::LevelFilter::Info),
     );
@@ -72,17 +101,22 @@ pub fn init_session(env: JNIEnv, target: JObject) -> VoiceSessionState {
         target_ref: target_ref.clone(),
         last_level_sent: Arc::new(Mutex::new(std::time::Instant::now())),
         session_active: Arc::new(AtomicBool::new(false)),
+        use_english,
     };
 
-    // Load engine in background
-    let vm_clone = vm_arc.clone();
-    let target_ref_clone = target_ref.clone();
-
-    std::thread::spawn(move || {
-        let _ = engine::ensure_loaded_from_thread(&vm_clone, &target_ref_clone);
-    });
-
+    let slot = chosen_slot(&mut env, &target, use_english);
+    preload(&state, slot);
     state
+}
+
+/// Switches between the English and the international model. Allowed until
+/// the recording stops; the newly chosen model starts loading right away
+/// (if it isn't already), so it is ready when the user stops speaking.
+pub fn set_model_choice(mut env: JNIEnv, state: &mut VoiceSessionState, use_english: bool) {
+    state.use_english = use_english;
+    let slot = chosen_slot(&mut env, state.target_ref.as_obj(), use_english);
+    log::info!("voice input model: {:?}", slot);
+    preload(state, slot);
 }
 
 /// Begin microphone capture. With `auto_stop` set, a monitor thread watches
@@ -166,15 +200,11 @@ pub fn start_recording(mut env: JNIEnv, state: &mut VoiceSessionState, auto_stop
             state.stream = Some(SendStream(s));
             notify_status(&mut env, state.target_ref.as_obj(), "Listening...");
 
-            // Settings changed in the app since this process loaded the
-            // model: reload while the user speaks rather than after.
-            if engine::is_engine_loaded() && !engine::is_current() {
-                let jvm = state.jvm.clone();
-                let target_ref = state.target_ref.clone();
-                std::thread::spawn(move || {
-                    let _ = engine::ensure_loaded_from_thread(&jvm, &target_ref);
-                });
-            }
+            // The chosen model isn't loaded yet, or settings changed in the
+            // app since this process loaded it: load while the user speaks
+            // rather than after.
+            let slot = chosen_slot(&mut env, state.target_ref.as_obj(), state.use_english);
+            preload(state, slot);
 
             if let Some(ep) = endpoint {
                 let jvm = state.jvm.clone();
@@ -240,6 +270,8 @@ pub fn stop_recording(mut env: JNIEnv, state: &mut VoiceSessionState) {
 
     let jvm = state.jvm.clone();
     let target_ref = state.target_ref.clone();
+    // The choice is final now: the model selected at stop transcribes.
+    let slot = chosen_slot(&mut env, target_ref.as_obj(), state.use_english);
 
     notify_status(&mut env, target_ref.as_obj(), "Transcribing...");
 
@@ -252,13 +284,13 @@ pub fn stop_recording(mut env: JNIEnv, state: &mut VoiceSessionState) {
 
         // Wait for the engine if it is still loading, or reload it if the
         // model settings changed since it was loaded.
-        if !engine::is_current() {
-            if let Err(_) = engine::ensure_loaded(&mut env, obj) {
+        if !engine::is_current_slot(slot) {
+            if let Err(_) = engine::ensure_loaded_slot(&mut env, obj, slot) {
                 return;
             }
         }
 
-        if let Some(eng_arc) = engine::get_engine() {
+        if let Some(eng_arc) = engine::get_engine_slot(slot) {
             let res = engine::transcribe_speech(&eng_arc, buffer);
 
             match res {
@@ -268,6 +300,8 @@ pub fn stop_recording(mut env: JNIEnv, state: &mut VoiceSessionState) {
                 }
                 Err(e) => notify_status(&mut env, obj, &format!("Error: {}", e)),
             }
+            // Only the model just used stays in memory.
+            engine::release_other(slot);
         } else {
             notify_status(&mut env, obj, "Error: model not loaded");
         }

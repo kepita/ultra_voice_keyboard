@@ -95,11 +95,22 @@
                             android:text="@string/btn_download_recommended"/>
                     </LinearLayout>
 
+                    <!-- One row per model, each with International / English
+                         role chips (item_model.xml). -->
                     <LinearLayout
                         android:id="@+id/model_list"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
+                        android:layout_marginBottom="8dp"/>
+
+                    <TextView
+                        android:id="@+id/txt_models_roles"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/models_roles_hint"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginBottom="8dp"/>
 
                     <TextView
