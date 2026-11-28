@@ -46,8 +46,13 @@ fn chosen_slot(env: &mut JNIEnv, target: &JObject, use_english: bool) -> Slot {
 
 /// Loads the engine of `slot` in the background unless it is loaded and up
 /// to date, so it is ready by the time the recording stops.
+///
+/// Skipped while a load of `slot` is already running: several triggers fire
+/// together (the model choice and the recording start), and a second
+/// loader would only wait for the first and report "Waiting for model...",
+/// which the keyboard shows as busy in the middle of the recording.
 fn preload(state: &VoiceSessionState, slot: Slot) {
-    if engine::is_current_slot(slot) {
+    if engine::is_current_slot(slot) || engine::is_loading(slot) {
         return;
     }
     let jvm = state.jvm.clone();
