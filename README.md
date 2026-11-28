@@ -150,6 +150,17 @@ export STORE_PASS=yourpassword
 
 The built-in Parakeet TDT GGUF model (~485 MB) is automatically downloaded from HuggingFace during the first `standard` build via a Gradle task. The checksum is verified with SHA-256. No manual download is needed. `fdroid` builds never download it.
 
+### Versioning
+
+Versions come from git tags; there's no version number to edit by hand.
+
+- A fork release is a tag `v<upstream version>-ultra.<N>`, e.g. `v0.2.3-ultra.1` (based on upstream 0.2.3, fork release 1). Pushing the tag builds the release on GitHub.
+- A build of the tagged commit is version `0.2.3-ultra.1`. Commits after it build as `0.2.3-ultra.1-dev.3+abc1234` (3 commits later, at commit `abc1234`), and debug builds add `-debug`. The app shows its version at the bottom of the home screen.
+- The `versionCode` is computed from the name: `((MAJOR*100 + MINOR)*100 + PATCH)*100 + N`, so `0.2.3-ultra.1` → `20301`. It grows with every fork release and every new upstream base, so updates always install. MINOR, PATCH and N go up to 99.
+- To release, tag the commit and push the tag: `git tag v0.2.3-ultra.2 && git push origin v0.2.3-ultra.2`. After moving to a new upstream version, start again at `ultra.1`, e.g. `v0.2.4-ultra.1`.
+- Without git or a fork tag (e.g. a shallow clone or a source download), the build uses `fallbackVersion` in `app/build.gradle.kts`. Keep it at the latest release.
+- `./gradlew -q printVersionName` and `./gradlew -q printVersionCode` print what a build will use.
+
 ## Project Structure
 
 ```

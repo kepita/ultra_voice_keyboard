@@ -10,6 +10,53 @@ plugins {
 val targetAbis = (project.findProperty("targetAbis") as String? ?: "arm64-v8a")
     .split(",").map { it.trim() }.filter { it.isNotEmpty() }
 
+// ---------------------------------------------------------------------------
+// Versioning (README → "Versioning")
+// ---------------------------------------------------------------------------
+// Fork releases are git tags v<upstream version>-ultra.<N>, e.g. v0.2.3-ultra.1.
+// A build of a tagged commit is versioned exactly like the tag; later commits
+// get "-dev.<commits since the tag>+<commit>" so test builds can't pass for a
+// release. Without git or a fork tag (e.g. a shallow clone), the fallback is
+// used: keep it at the latest release.
+val fallbackVersion = "0.2.3-ultra.1"
+
+fun gitDescribe(): String? = try {
+    val out = providers.exec {
+        workingDir = rootProject.projectDir
+        commandLine("git", "describe", "--tags", "--long", "--abbrev=7", "--match", "v*-ultra.*")
+        isIgnoreExitValue = true
+    }
+    if (out.result.get().exitValue == 0) out.standardOutput.asText.get().trim() else null
+} catch (e: Exception) {
+    null // no git installed
+}
+
+val appVersionName: String = gitDescribe()
+    ?.let { Regex("""^v(.+)-(\d+)-g([0-9a-f]+)$""").matchEntire(it) }
+    ?.let { m ->
+        val (tag, commits, hash) = m.destructured
+        if (commits == "0") tag else "$tag-dev.$commits+$hash"
+    }
+    ?: fallbackVersion
+
+// versionCode from the release part of the name: MAJOR.MINOR.PATCH-ultra.N
+// -> ((MAJOR*100 + MINOR)*100 + PATCH)*100 + N, e.g. 0.2.3-ultra.1 -> 20301.
+// It only ever grows: with each fork release and with each new upstream base.
+// Dev builds share their release's code (they install over it).
+val appVersionCode: Int = run {
+    val m = Regex("""^(\d+)\.(\d+)\.(\d+)-ultra\.(\d+)""").find(appVersionName)
+        ?: throw GradleException("Version '$appVersionName' isn't MAJOR.MINOR.PATCH-ultra.N")
+    val (major, minor, patch, n) = m.destructured.toList().map { it.toInt() }
+    if (minor > 99 || patch > 99 || n > 99) {
+        throw GradleException("Version '$appVersionName': minor, patch and N must be at most 99")
+    }
+    ((major * 100 + minor) * 100 + patch) * 100 + n
+}
+
+// For CI: ./gradlew -q printVersionName / printVersionCode
+tasks.register("printVersionName") { doLast { println(appVersionName) } }
+tasks.register("printVersionCode") { doLast { println(appVersionCode) } }
+
 android {
     namespace = "dev.notune.transcribe"
     compileSdk = 36
@@ -20,8 +67,9 @@ android {
         applicationId = "dev.notune.transcribe.ultra"
         minSdk = 26
         targetSdk = 36
-        versionCode = 23
-        versionName = "0.2.3"
+        // Derived from git tags, see "Versioning" above.
+        versionCode = appVersionCode
+        versionName = appVersionName
         ndk {
             abiFilters += targetAbis
         }
@@ -63,6 +111,10 @@ android {
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("release")
+        }
+        debug {
+            // A test build can never be mistaken for a release.
+            versionNameSuffix = "-debug"
         }
     }
 

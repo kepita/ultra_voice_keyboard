@@ -104,6 +104,8 @@ public class MainActivity extends AppCompatActivity {
         benchResultText = findViewById(R.id.text_bench_result);
         benchButton.setOnClickListener(v -> runBenchmark());
 
+        showVersion();
+
         // Settings stored as marker files in filesDir (readable from the
         // keyboard service and native code).
         bindMarkerSwitch(R.id.switch_auto_record, "auto_record", false);
@@ -357,6 +359,17 @@ public class MainActivity extends AppCompatActivity {
      * results are comparable across models and devices; the run uses the
      * current model settings (language hint, translate).
      */
+    /** Shows which build this is (versionName, see app/build.gradle.kts). */
+    private void showVersion() {
+        TextView view = findViewById(R.id.text_version);
+        try {
+            String name = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+            view.setText(getString(R.string.app_version, name));
+        } catch (android.content.pm.PackageManager.NameNotFoundException e) {
+            view.setVisibility(View.GONE);
+        }
+    }
+
     private void runBenchmark() {
         benchRunning = true;
         benchButton.setEnabled(false);

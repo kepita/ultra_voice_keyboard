@@ -95,6 +95,7 @@
     <string name="section_benchmark">Benchmark</string>
     <string name="desc_benchmark">Misst, wie schnell das aktive Modell auf diesem Gerät transkribiert, anhand einer integrierten englischen Testaufnahme (11 s).</string>
     <string name="btn_benchmark">Benchmark starten</string>
+    <string name="app_version">Version %1$s</string>
     <string name="bench_running">Benchmark läuft…</string>
     <string name="bench_result">%1$s s Audio in %2$s s: %3$s× Echtzeit</string>
     <string name="bench_error">Benchmark fehlgeschlagen: %1$s</string>
