@@ -45,9 +45,12 @@ android {
             val ksFile = rootProject.file("release.keystore")
             if (ksFile.exists()) {
                 storeFile = ksFile
-                storePassword = System.getenv("STORE_PASS") ?: "password"
+                // No password fallback: a missing STORE_PASS/KEY_PASS fails
+                // release signing with a clear error instead of trying a
+                // guessable default.
+                storePassword = System.getenv("STORE_PASS")
                 keyAlias = System.getenv("KEY_ALIAS") ?: "release"
-                keyPassword = System.getenv("KEY_PASS") ?: "password"
+                keyPassword = System.getenv("KEY_PASS")
             }
         }
     }
