@@ -34,7 +34,7 @@
     <string name="setting_pause_audio_desc">Pause audio while recording</string>
 
     <string name="setting_record_background">Record in background</string>
-    <string name="setting_record_background_desc">Keep recording when the voice keyboard is hidden; the text is inserted when you return</string>
+    <string name="setting_record_background_desc">Keep recording when the voice keyboard is hidden, even if you switch to another app mid-recording; the text is inserted when you return to the original app</string>
 
     <string name="setting_auto_stop">Auto-stop after silence</string>
     <string name="setting_auto_stop_desc">End the voice input popup automatically ~2 seconds after you stop speaking</string>
